@@ -1,6 +1,6 @@
 import { request, requestVoid } from '@/shared/api/client'
+import { loadCustomerOptions } from '@/shared/api/customers'
 import {
-  customerOptionsSchema,
   customerSchema,
   pageSchema,
   type Customer,
@@ -28,12 +28,11 @@ export const customersApi = {
 
   remove: (id: string) => requestVoid(`/customers/${encodeURIComponent(id)}`),
 
-  options: async (keyword: string) => {
-    const result = await request('/customers/options', customerOptionsSchema, {
-      query: { keyword },
-    })
-    return result.items
-  },
+  options: async (keyword: string) =>
+    (await loadCustomerOptions(keyword)).map((customer) => ({
+      label: customer.name,
+      value: customer.id,
+    })),
 }
 
 export type { Customer }

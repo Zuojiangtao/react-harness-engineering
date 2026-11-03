@@ -159,6 +159,12 @@ export const orderFiltersSchema = z.object({
 
 export type OrderFilters = z.infer<typeof orderFiltersSchema>
 
+export const ORDER_DEFAULT_FILTERS: OrderFilters = {
+  page: 1,
+  pageSize: 10,
+  sort: '-createdAt',
+}
+
 export const orderTransitionBodySchema = z.object({ to: orderTransitionSchema })
 
 /** ---------- 成员与鉴权 ---------- */
