@@ -13,6 +13,14 @@ export function useCustomerList(filters: CustomerFilters) {
   })
 }
 
+export function useCustomer(id: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.customers.detail(id ?? ''),
+    queryFn: () => customersApi.get(id as string),
+    enabled: Boolean(id),
+  })
+}
+
 export function useMembers() {
   return useQuery({ queryKey: queryKeys.members, queryFn: membersApi.list, staleTime: 5 * 60_000 })
 }

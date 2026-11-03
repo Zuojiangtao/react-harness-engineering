@@ -1,4 +1,5 @@
 import { Badge, Button, Space, Tag, Typography } from 'antd'
+import { Link } from 'react-router-dom'
 import type { ColumnsType } from 'antd/es/table'
 import type { Customer } from '@/shared/api/schema'
 import { formatDateTime } from '@/shared/lib/format'
@@ -17,7 +18,7 @@ export function buildCustomerColumns(options: {
       sorter: true,
       render: (name: string, row) => (
         <div>
-          <div>{name}</div>
+          <Link to={`/customers/${row.id}`}>{name}</Link>
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
             {INDUSTRY_LABELS[row.industry]}
           </Typography.Text>
