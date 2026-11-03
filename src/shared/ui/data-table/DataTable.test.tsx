@@ -1,4 +1,4 @@
-﻿import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ApiError } from '@/shared/api/errors'
@@ -19,7 +19,7 @@ describe('DataTable', () => {
     expect(screen.getByText('远山科技')).toBeInTheDocument()
   })
 
-  it('loading 时不渲染空态', () => {
+  it('[CUS-05] loading 时不渲染空态', () => {
     const { container } = renderWithProviders(
       <DataTable
         columns={columns}

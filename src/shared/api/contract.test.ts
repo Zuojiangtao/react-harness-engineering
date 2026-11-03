@@ -222,6 +222,25 @@ describe('鉴权接口', () => {
     expect(isApiError(error)).toBe(true)
     if (isApiError(error)) expect(error.status).toBe(401)
   })
+
+  it('[AUTH-03] 403 之后会话仍然有效', async () => {
+    await loginAs('viewer')
+    await expect(
+      request('/customers', customerSchema, {
+        method: 'POST',
+        body: {
+          name: '只读客户',
+          industry: 'tech',
+          level: 'key',
+          status: 'active',
+          ownerId: 'usr_1',
+        },
+      }),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' })
+
+    const me = await request('/auth/me', meResponseSchema)
+    expect(me.user.role).toBe('viewer')
+  })
 })
 
 describe('错误归一化', () => {

@@ -20,7 +20,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "spec:validate": "node scripts/check-spec.mjs",
+    "spec:validate": "node scripts/check-spec.mjs --strict",
     "spec:strict": "node scripts/check-spec.mjs --strict",
     "verify": "node scripts/verify.mjs"
   },

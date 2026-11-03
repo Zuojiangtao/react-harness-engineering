@@ -35,6 +35,16 @@ describe('客户列表页', () => {
     expect(screen.queryByText('北辰零售')).not.toBeInTheDocument()
   })
 
+  it('[AUTH-02] 只读角色看不到写操作入口', async () => {
+    setToken('mock-viewer-token')
+    renderWithProviders(<CustomersPage />, { route: '/customers' })
+    await screen.findByText('原点设计')
+
+    expect(screen.queryByRole('button', { name: /新建客户/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /编\s*辑/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /删\s*除/ })).not.toBeInTheDocument()
+  })
+
   it('删除有关联订单的客户时展示 409 文案', async () => {
     renderWithProviders(<CustomersPage />, { route: '/customers' })
     const nameCell = await screen.findByText('启明电子')
