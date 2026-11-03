@@ -1,26 +1,16 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/shared/api/query-keys'
 import { membersApi } from '@/shared/api/members'
 import type { CustomerFilters } from '@/shared/api/schema'
+import { useResourceList } from '@/shared/lib/use-resource-list'
 import { customersApi } from './api'
 
 export function useCustomerList(filters: CustomerFilters) {
-  const query = useQuery({
+  return useResourceList({
     queryKey: queryKeys.customers.list(filters),
-    queryFn: ({ signal }) => customersApi.list(filters, signal),
-    placeholderData: keepPreviousData,
+    filters,
+    list: customersApi.list,
   })
-
-  const rows = query.data?.items ?? []
-  const status = query.isPending
-    ? ('loading' as const)
-    : query.isError
-      ? ('error' as const)
-      : rows.length === 0
-        ? ('empty' as const)
-        : ('ready' as const)
-
-  return { query, rows, total: query.data?.total ?? 0, status }
 }
 
 export function useMembers() {

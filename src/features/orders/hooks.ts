@@ -1,25 +1,15 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { OrderFilters } from '@/shared/api/schema'
+import { useResourceList } from '@/shared/lib/use-resource-list'
 import { ordersApi, type TransitionTarget } from './api'
 
 export function useOrderList(filters: OrderFilters) {
-  const query = useQuery({
+  return useResourceList({
     queryKey: queryKeys.orders.list(filters),
-    queryFn: ({ signal }) => ordersApi.list(filters, signal),
-    placeholderData: keepPreviousData,
+    filters,
+    list: ordersApi.list,
   })
-
-  const rows = query.data?.items ?? []
-  const status = query.isPending
-    ? ('loading' as const)
-    : query.isError
-      ? ('error' as const)
-      : rows.length === 0
-        ? ('empty' as const)
-        : ('ready' as const)
-
-  return { query, rows, total: query.data?.total ?? 0, status }
 }
 
 export function useOrderMutations() {
