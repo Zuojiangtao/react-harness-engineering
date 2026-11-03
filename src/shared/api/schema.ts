@@ -93,6 +93,20 @@ export const customerFiltersSchema = z.object({
 
 export type CustomerFilters = z.infer<typeof customerFiltersSchema>
 
+export const CUSTOMER_DEFAULT_FILTERS: CustomerFilters = {
+  page: 1,
+  pageSize: 10,
+  sort: '-createdAt',
+}
+
+export const customerOptionSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  status: customerStatusSchema,
+})
+
+export const customerOptionsSchema = z.object({ items: z.array(customerOptionSchema) })
+
 export const bulkDeleteSchema = z.object({
   ids: z.array(z.string().startsWith('cus_')).min(1, '请至少选择一条记录'),
 })
@@ -157,6 +171,8 @@ export const memberSchema = z.object({
   name: z.string(),
   role: roleSchema,
 })
+
+export const membersResponseSchema = z.object({ items: z.array(memberSchema) })
 
 export type Member = z.infer<typeof memberSchema>
 
