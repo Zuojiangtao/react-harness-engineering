@@ -28,9 +28,13 @@ npm run verify         # lint + typecheck + test + spec + build，快速失败
 npm run test           # Vitest（schema / 契约 / 组件 / 页面）
 npm run spec:validate  # openspec validate --strict + 需求 ID 追溯
 npm run build          # 生产构建
+
+# e2e（首次需要安装浏览器）
+npx playwright install chromium
+npm run test:e2e
 ```
 
-`npm run verify` 当前约 18s，52 个测试，规格 11 条全部可追溯到测试。
+`npm run verify` 当前约 10–18s，52 个测试，规格 11 条全部可追溯到测试。
 
 ## 功能
 
@@ -122,7 +126,7 @@ VITE_API_MODE=http VITE_API_BASE_URL=http://localhost:8787/api npm run dev
 
 - 未提供独立的 HTTP server 做"换后端"端到端演练（契约与切换机制已就绪）。
 - 客户/订单没有独立详情页，编辑走抽屉；批量删除只有接口，UI 未接。
-- e2e（Playwright）用例尚未落地，页面级集成测试覆盖了主要路径。
+- e2e 已提供两条冒烟用例（`e2e/auth.spec.ts`），需先安装浏览器；本机沙箱无法启动浏览器进程，未在本地执行，CI 中会跑。
 - 列表未虚拟化（数据量 ≤ 60 条），这是有意的取舍。
 
 ## 我如何使用 AI
