@@ -93,7 +93,7 @@ docs/adr       决策（为什么）
 
 ### 规格驱动
 
-三个 change 对应三个里程碑：
+三个 change 对应三个里程碑，均已完成并归档（`openspec/changes/archive/`），当前生效规格在 `openspec/specs/`：
 
 - `001-customer-crud`：CUS-01…CUS-06
 - `002-order-crud`：ORD-01…ORD-05
