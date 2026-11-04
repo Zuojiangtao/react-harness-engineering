@@ -33,10 +33,12 @@ pnpm run test           # Vitest（schema / 契约 / 组件 / 页面）
 pnpm run spec:validate  # openspec validate --strict + 需求 ID 追溯
 pnpm run build          # 生产构建
 
-# e2e（首次需要安装浏览器）
+# e2e（可选；首次需要安装浏览器。只跑应用不需要）
 pnpm exec playwright install chromium
 pnpm run test:e2e
 ```
+
+> `pnpm install && pnpm run dev` 即可运行应用，不需要 Playwright 或 Chromium；e2e 是额外的可选验证，CI 会自行安装浏览器。
 
 `pnpm run verify` 当前约 10–18s，84 个测试，规格 14 条全部可追溯到测试；`boundaries` 步骤会用 6 个负向用例确认违规 import 真的会被拦截。
 
