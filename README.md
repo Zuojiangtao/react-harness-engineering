@@ -17,19 +17,35 @@ pnpm run dev          # http://localhost:5173
 
 演示账号（已预填，也可以直接点按钮）：
 
-| 角色 | 邮箱 | 密码 | 能力 |
-|---|---|---|---|
-| 管理员 | admin@example.com | admin123 | 全部操作 |
-| 只读 | viewer@example.com | viewer123 | 只看，无写入口，接口层 403 |
+| 角色   | 邮箱               | 密码      | 能力                       |
+| ------ | ------------------ | --------- | -------------------------- |
+| 管理员 | admin@example.com  | admin123  | 全部操作                   |
+| 只读   | viewer@example.com | viewer123 | 只看，无写入口，接口层 403 |
 
 Mock 数据：24 个客户、60 个订单；后 4 个客户没有订单，方便演示"可删除"。刷新页面数据重置。
+
+### 5 分钟验收路径
+
+```bash
+pnpm install && pnpm run dev
+```
+
+1. 用管理员进入；在客户列表试关键词/等级/状态筛选，刷新页面确认 URL 还原。
+2. 编辑 `原点设计`，清空手机号/邮箱并保存；删除 `启明电子` 看订单关联保护（3 个订单）。
+3. 到订单列表把 `ord_001`（草稿）确认收款；确认 `ord_002`（已收款）不可删除。
+4. 退出后用只读账号进入：新建/编辑/删除入口消失，直接调接口仍返回 403。
+5. 跑 `pnpm run verify`，看耗时和测试数；再读 `git log --oneline` 和 `docs/iteration-log.md`。
+
+种子数据锚点：`cus_001` 有 3 个订单；`cus_004` 已归档；`cus_021` 无订单可删；`ord_001` 草稿、`ord_002` 已收款、`ord_003` 已退款、`ord_004` 已取消。
 
 ## 命令
 
 ```bash
 pnpm run dev            # 开发（默认 mock 模式）
-pnpm run verify         # lint + typecheck + test + spec + build，快速失败
+pnpm run verify         # format + lint + boundaries + typecheck + test + spec + build
+pnpm run format:check   # Prettier 检查（verify 已包含）
 pnpm run test           # Vitest（schema / 契约 / 组件 / 页面）
+pnpm run test:coverage  # Vitest + v8 覆盖率门禁
 pnpm run spec:validate  # openspec validate --strict + 需求 ID 追溯
 pnpm run build          # 生产构建
 
@@ -38,19 +54,19 @@ pnpm exec playwright install chromium
 pnpm run test:e2e
 ```
 
-> `pnpm install && pnpm run dev` 即可运行应用，不需要 Playwright 或 Chromium；e2e 是额外的可选验证，CI 会自行安装浏览器。
+> `pnpm install && pnpm run dev` 即可运行应用，不需要 Playwright 或 Chromium；e2e 是额外的可选验证，CI 会自行安装浏览器并在失败时上传 HTML report。
 
-`pnpm run verify` 当前约 10–18s，84 个测试，规格 14 条全部可追溯到测试；`boundaries` 步骤会用 6 个负向用例确认违规 import 真的会被拦截。
+`pnpm run verify` 当前约 10–18s，90 个测试，规格 14 条全部可追溯到测试；`boundaries` 步骤会用 6 个负向用例确认违规 import 真的会被拦截。
 
 ## 功能
 
-| 路由 | 说明 |
-|---|---|
-| `/login` | 两个演示角色一键进入 |
-| `/customers` | 关键词/等级/状态筛选、排序、分页，全部写入 URL；新建/编辑抽屉；删除关联保护 |
-| `/customers/:id` | 客户详情 + 关联订单（复用订单表格，验证第三个调用点） |
-| `/orders` | 状态/关键词筛选、金额排序；异步搜索客户；金额按分存储；状态机流转 |
-| `*` | 404 |
+| 路由             | 说明                                                                        |
+| ---------------- | --------------------------------------------------------------------------- |
+| `/login`         | 两个演示角色一键进入                                                        |
+| `/customers`     | 关键词/等级/状态筛选、排序、分页，全部写入 URL；新建/编辑抽屉；删除关联保护 |
+| `/customers/:id` | 客户详情 + 关联订单（复用订单表格，验证第三个调用点）                       |
+| `/orders`        | 状态/关键词筛选、金额排序；异步搜索客户；金额按分存储；状态机流转           |
+| `*`              | 404                                                                         |
 
 业务规则（与 `openspec/` 一致）：
 
@@ -75,13 +91,13 @@ docs/adr       决策（为什么）
 
 状态归属：
 
-| 状态 | 位置 |
-|---|---|
-| 服务端数据 | TanStack Query |
+| 状态           | 位置                 |
+| -------------- | -------------------- |
+| 服务端数据     | TanStack Query       |
 | 筛选/分页/排序 | URL（`useUrlState`） |
-| 表单 | antd Form 实例 |
-| 抽屉、选中行 | 组件本地 state |
-| 全局 store | 没有 |
+| 表单           | antd Form 实例       |
+| 抽屉、选中行   | 组件本地 state       |
+| 全局 store     | 没有                 |
 
 复用分两层：`DataTable` / `ResourceForm` 是稳定的展示模式；`useResourceList` 是在客户、订单**两个调用点都出现之后**才抽出的编排逻辑（见 [ADR 0003](docs/adr/0003-reuse-boundary.md)）。加第三个同类模块的目标是 1 小时内完成且不改 `shared/`。
 
@@ -94,13 +110,13 @@ docs/adr       决策（为什么）
 
 ## Harness
 
-| 层 | 位置 |
-|---|---|
-| 上下文 | [AGENTS.md](AGENTS.md)、[docs/rules.md](docs/rules.md)、[openspec/](openspec/) |
-| 约束 | TS strict、ESLint 边界、Prettier、env Zod 校验、提交规范 |
-| 反馈 | `pnpm run verify`、84 个测试、17 端点契约、`spec:validate` |
-| 流程 | `.claude/commands/` 四个命令；OpenSpec 的 `/opsx:*` |
-| 证据 | git 历史、[docs/iteration-log.md](docs/iteration-log.md)、[docs/traceability.md](docs/traceability.md) |
+| 层     | 位置                                                                                                   |
+| ------ | ------------------------------------------------------------------------------------------------------ |
+| 上下文 | [AGENTS.md](AGENTS.md)、[docs/rules.md](docs/rules.md)、[openspec/](openspec/)                         |
+| 约束   | TS strict、ESLint 边界、Prettier、env Zod 校验、提交规范                                               |
+| 反馈   | `pnpm run verify`、90 个测试、17 端点契约、`spec:validate`                                             |
+| 流程   | `.claude/commands/` 四个命令；OpenSpec 的 `/opsx:*`                                                    |
+| 证据   | git 历史、[docs/iteration-log.md](docs/iteration-log.md)、[docs/traceability.md](docs/traceability.md) |
 
 ### 规格驱动
 
@@ -134,7 +150,7 @@ VITE_API_MODE=http VITE_API_BASE_URL=http://localhost:8787/api pnpm run dev
 
 - 未提供独立的 HTTP server 做"换后端"端到端演练（契约与切换机制已就绪）。
 - 订单没有独立详情页，编辑走抽屉；批量删除只有接口，UI 未接。
-- e2e 已提供 auth、MSW worker、客户 CRUD 三个 spec，需先安装浏览器；本机沙箱未在本地执行，CI 中会跑。
+- e2e 已提供 auth、MSW worker、客户 CRUD 三个 spec，需先安装浏览器；CI 会安装浏览器并运行，失败时上传 HTML report 与 trace。
 - OpenAPI 导出与独立 `db:reset` 命令未实现；契约以 Zod 和 17 个端点测试为准，mock 数据刷新页面即重置。
 - 列表未虚拟化（数据量 ≤ 60 条），这是有意的取舍。
 

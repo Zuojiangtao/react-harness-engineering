@@ -1,5 +1,7 @@
 # 04 Harness 体系
 
+> **状态：设计稿。** 本文记录目标方案与取舍，不是当前实现的完整清单；实际命令、门禁与已知限制以 [AGENTS.md](../../AGENTS.md) 和 [README.md](../../README.md) 为准。文中标注「规划」的项未实现，OpenAPI/契约导出也未接入 CI。
+
 ## 0. 先把词定义清楚
 
 > **脚手架**：一次性生成目录和样板代码。
@@ -17,12 +19,12 @@
 
 所以交付物按"能被怎么用"分四篮，而不是按"我写了什么"分：
 
-| 篮子 | 具体产物 | 面试官会怎么用 |
-|---|---|---|
-| **可执行** | `pnpm verify`、`pnpm test:e2e`、CI workflow、`pnpm spec:validate`、`pnpm dev`（mock 默认） | 当场跑一遍，看耗时与失败信息是否可定位 |
-| **可阅读** | `AGENTS.md`、`.claude/commands/`、`docs/rules.md`、`openspec/`、`docs/adr/`、README 的 harness 一节 | 读 10 分钟，判断"新会话能不能接上" |
-| **可复用** | 目录骨架、`shared/ui` 的 DataTable/ResourceForm、命令模板、CI 模板、spec 模板 | 问"加第三个模块要多久、要改 shared 吗" |
-| **可验证** | git log 粒度、CI 运行记录、`docs/iteration-log.md`、契约覆盖 17/17、`verify` 耗时 | 用事实核对"快速且高质量"这句话 |
+| 篮子       | 具体产物                                                                                            | 面试官会怎么用                         |
+| ---------- | --------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| **可执行** | `pnpm verify`、`pnpm test:e2e`、CI workflow、`pnpm spec:validate`、`pnpm dev`（mock 默认）          | 当场跑一遍，看耗时与失败信息是否可定位 |
+| **可阅读** | `AGENTS.md`、`.claude/commands/`、`docs/rules.md`、`openspec/`、`docs/adr/`、README 的 harness 一节 | 读 10 分钟，判断"新会话能不能接上"     |
+| **可复用** | 目录骨架、`shared/ui` 的 DataTable/ResourceForm、命令模板、CI 模板、spec 模板                       | 问"加第三个模块要多久、要改 shared 吗" |
+| **可验证** | git log 粒度、CI 运行记录、`docs/iteration-log.md`、契约覆盖 17/17、`verify` 耗时                   | 用事实核对"快速且高质量"这句话         |
 
 ### 面试官真正想确认的三层
 
@@ -50,14 +52,14 @@ git log --oneline           # 5) 迭代粒度是否可信
 
 ## 1. 六层与验收
 
-| 层 | 产出物 | 解决什么问题 | 怎么算做到 |
-|---|---|---|---|
-| 上下文 | `AGENTS.md`、`docs/rules.md`、`openspec/`、`docs/adr/*` | AI 不知道项目约定，每次都要重新解释 | 新开会话只读 AGENTS.md 就能改对一个字段；需求能从 spec 追到测试 |
-| 约束 | TS strict、ESLint（含 boundaries）、Prettier、commitlint、env zod 校验 | 错误在写的时候就被挡住，而不是 review 时 | 故意在组件里写 `fetch` 会被 lint 拦下 |
-| 反馈 | `pnpm verify`、Vitest、Playwright、契约测试 | AI 无法自己判断对错，只能猜 | 一次 verify ≤ 120s，失败信息能定位到文件行 |
-| 流程 | 4 个 slash command + OpenSpec 的 `/opsx:*`、PR 模板、spec 模板 | 任务边界不清导致大改和返工 | 新模块按配方 7 步走完，无需口头补充 |
-| 证据 | git log、`docs/iteration-log.md`、ADR、CI 徽章 | 面试官无法验证"过程" | 每条 P0 功能都能指出对应 commit 与测试 |
-| 度量 | verify 时长、端点覆盖、模块接入成本 | 不知道 harness 是否在退化 | README 里给出三个数字并随迭代更新 |
+| 层     | 产出物                                                                 | 解决什么问题                             | 怎么算做到                                                      |
+| ------ | ---------------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------- |
+| 上下文 | `AGENTS.md`、`docs/rules.md`、`openspec/`、`docs/adr/*`                | AI 不知道项目约定，每次都要重新解释      | 新开会话只读 AGENTS.md 就能改对一个字段；需求能从 spec 追到测试 |
+| 约束   | TS strict、ESLint（含 boundaries）、Prettier、commitlint、env zod 校验 | 错误在写的时候就被挡住，而不是 review 时 | 故意在组件里写 `fetch` 会被 lint 拦下                           |
+| 反馈   | `pnpm verify`、Vitest、Playwright、契约测试                            | AI 无法自己判断对错，只能猜              | 一次 verify ≤ 120s，失败信息能定位到文件行                      |
+| 流程   | 4 个 slash command + OpenSpec 的 `/opsx:*`、PR 模板、spec 模板         | 任务边界不清导致大改和返工               | 新模块按配方 7 步走完，无需口头补充                             |
+| 证据   | git log、`docs/iteration-log.md`、ADR、CI 徽章                         | 面试官无法验证"过程"                     | 每条 P0 功能都能指出对应 commit 与测试                          |
+| 度量   | verify 时长、端点覆盖、模块接入成本                                    | 不知道 harness 是否在退化                | README 里给出三个数字并随迭代更新                               |
 
 ## 2. AGENTS.md 草案（可直接落盘）
 
@@ -68,27 +70,31 @@ git log --oneline           # 5) 迭代粒度是否可信
 改代码前必须先读第 3、4、5 节。
 
 ## 1. 项目
+
 企业服务公司的内部 CRM：客户 + 订单。SPA，无 SSR。后端不存在，用 MSW 按契约模拟。
 
 ## 2. 命令
-| 命令 | 作用 | 何时跑 |
-|---|---|---|
-| pnpm dev | 启动（默认 mock 模式） | 开发 |
-| pnpm dev:http | （规划）指向本地真后端 :8787 | 换后端演练 |
-| pnpm verify | lint + boundaries + typecheck + test + spec + build | **每次提交前必跑** |
-| pnpm test / test:watch | 单元与集成测试 | 改逻辑时 |
-| pnpm test:e2e | Playwright | 改交互后 |
-| pnpm contract:openapi | （规划）由 zod 导出 OpenAPI | 改契约后 |
-| pnpm spec:validate | 校验 openspec 规格与需求 ID 追溯 | 改需求后 |
-| pnpm db:reset | （规划）重置 mock 种子；当前刷新页面即可 | 演示前 |
+
+| 命令                   | 作用                                                | 何时跑             |
+| ---------------------- | --------------------------------------------------- | ------------------ |
+| pnpm dev               | 启动（默认 mock 模式）                              | 开发               |
+| pnpm dev:http          | （规划）指向本地真后端 :8787                        | 换后端演练         |
+| pnpm verify            | lint + boundaries + typecheck + test + spec + build | **每次提交前必跑** |
+| pnpm test / test:watch | 单元与集成测试                                      | 改逻辑时           |
+| pnpm test:e2e          | Playwright                                          | 改交互后           |
+| pnpm contract:openapi  | （规划）由 zod 导出 OpenAPI                         | 改契约后           |
+| pnpm spec:validate     | 校验 openspec 规格与需求 ID 追溯                    | 改需求后           |
+| pnpm db:reset          | （规划）重置 mock 种子；当前刷新页面即可            | 演示前             |
 
 > 标（规划）的命令当前未在 `package.json` 实现；实际命令以 [AGENTS.md](../../AGENTS.md) 为准。
 
 ## 3. 目录与依赖方向
+
 src/app → src/pages → src/features/* → src/shared
 依赖只能向下。shared 不认识 features；features 之间禁止互相 import。
 
 ## 4. 硬规则（Must）
+
 1. 所有 HTTP 走 `shared/api/client.ts`。组件、hook 里出现 fetch/axios 即错。
 2. 新接口的顺序固定：改 schema → 改 mock handler → 跑契约测试 → 再写 UI。禁止先写 UI 再补契约。
 3. 列表/表格必须用 `shared/ui/data-table`；表单必须用 `shared/ui/resource-form`。要扩展就改共享组件的 props，不允许在 feature 里复制一份。
@@ -101,6 +107,7 @@ src/app → src/pages → src/features/* → src/shared
 10. 修 bug 必须同时补一条会失败的测试。
 
 ## 5. 禁止（Never）
+
 - 在组件里 `fetch`、`axios`、`useEffect` 里手写请求。
 - `any`、`@ts-ignore`、`eslint-disable`（确有必要时，同一行写明原因，并在 review 中说明）。
 - 用 `useEffect` 把 Query 数据同步到本地 state（需要派生值就用 `useMemo` 或选择器）。
@@ -111,6 +118,7 @@ src/app → src/pages → src/features/* → src/shared
 - 提交 `console.log`、注释掉的代码、未使用的导出。
 
 ## 6. 新增一个业务模块（7 步）
+
 1. 用 `/opsx:propose` 开一个 change（`proposal.md` + `tasks.md` + spec delta），列清实体、字段、接口、状态与验收。
 2. 在 `shared/api/schema.ts` 加实体与 filters schema，导出类型。
 3. 在 `mock/handlers/<module>.ts` 实现 5 个端点（list/get/create/update/delete），注册到 `handlers/index.ts`，跑契约测试。
@@ -120,10 +128,12 @@ src/app → src/pages → src/features/* → src/shared
 7. 补三类测试：schema 单测、列表集成测试、e2e happy path；跑 `pnpm verify`。
 
 ## 7. 改契约的顺序
+
 schema → 失败测试 → handler → 前端类型 → openapi 导出 → 全量 verify。
 顺序反了会出现"类型对但运行时 500"。
 
 ## 8. Definition of Done（提交前逐条打勾）
+
 - [ ] `pnpm verify` 全绿
 - [ ] 新逻辑有测试，且测试在改坏实现时会失败（手动验证一次）
 - [ ] 三态齐全，错误文案对用户可读
@@ -137,6 +147,7 @@ schema → 失败测试 → handler → 前端类型 → openapi 导出 → 全�
 - [ ] 如果改了需求，`openspec/changes/<id>/tasks.md` 已勾选、spec delta 已更新
 
 ## 9. 已知陷阱
+
 - MSW 在 `pnpm build && pnpm preview` 下默认不启用；e2e 必须用 mock 模式的 dev server，或显式开 `VITE_API_MODE=mock` 的 preview。
 - `import.meta.env` 只能读字符串；数字要用 zod `coerce`。
 - React Router 的 searchParams 是字符串，分页参数必须 `Number()` 后再进 schema。
@@ -144,6 +155,7 @@ schema → 失败测试 → handler → 前端类型 → openapi 导出 → 全�
 - Windows 下 Playwright 的 `webServer` 命令要用 `pnpm exec`，不要依赖全局。
 
 ## 10. 不确定时
+
 - 契约有歧义：先改 schema 并在 PR 描述里写明假设，不要私自扩展字段。
 - 需求没覆盖：在 spec 里加"待确认"，按最小实现推进，不猜产品意图。
 - 测试与实现冲突：先确认哪个是错的，把判断写进 commit message。
@@ -208,7 +220,7 @@ const steps = [
   ['lint', 'eslint . --max-warnings=0'],
   ['typecheck', 'tsc --noEmit'],
   ['test', 'vitest run --coverage'],
-  ['spec', 'node scripts/check-spec.mjs'],       // openspec validate --strict + 需求 ID 追溯
+  ['spec', 'node scripts/check-spec.mjs'], // openspec validate --strict + 需求 ID 追溯
   ['contract', 'node scripts/check-contract.mjs'],
   ['build', 'vite build'],
 ]
@@ -220,11 +232,18 @@ for (const [name, cmd] of steps) {
   const [bin, ...args] = cmd.split(' ')
   const r = spawnSync(bin, args, { stdio: 'inherit', shell: process.platform === 'win32' })
   console.log(`${r.status === 0 ? 'PASS' : 'FAIL'} ${name} ${Date.now() - t}ms`)
-  if (r.status !== 0) { failed.push(name); break }   // 快速失败，先修第一个
+  if (r.status !== 0) {
+    failed.push(name)
+    break
+  } // 快速失败，先修第一个
 }
-console.log(`\nverify ${failed.length ? 'FAILED: ' + failed.join(',') : 'OK'} in ${Date.now() - started}ms`)
+console.log(
+  `\nverify ${failed.length ? 'FAILED: ' + failed.join(',') : 'OK'} in ${Date.now() - started}ms`,
+)
 process.exit(failed.length ? 1 : 0)
 ```
+
+> 当前实际脚本见 [`scripts/verify.mjs`](../../scripts/verify.mjs)：包含 format、lint、boundaries、typecheck、test、spec、build；不包含下例中的 `contract` 步骤，契约由 `src/shared/api/endpoints.test.ts` 覆盖。
 
 设计点：
 
@@ -260,24 +279,26 @@ jobs:
         with: { name: playwright-report, path: playwright-report/ }
 ```
 
+> 上面是设计示例；当前 CI 只跑 `verify` + Playwright，不执行 `contract:openapi`。失败时会上传 `playwright-report/` 与 `test-results/`。
+
 CI 的作用不只是"跑测试"，而是**给 AI 一个外部的、不可争辩的对错信号**。本地 hook 可以省，CI 不能省。
 
 ## 6. AI 反模式 → 门禁对照
 
 这张表是 harness 的"为什么"，答辩时直接讲它。
 
-| AI 常见错误 | 症状 | 拦住它的东西 |
-|---|---|---|
-| 在组件里直接 fetch | 换后端要改 10 个文件 | ESLint `no-restricted-globals` + boundaries |
-| 跨 feature 引用 | 模块耦合，删一个崩一片 | `eslint-plugin-boundaries` |
-| 复制一份表格"先跑通" | 两处样式和行为漂移 | review 清单 + 后续重构 commit（有记录） |
-| 用 useEffect 把 query 数据塞 state | 竞态、闪屏、双请求 | review 清单 + 集成测试断言请求次数 |
-| 只写 happy path | 空态一片白、409 时白屏 | 三态检查 + e2e 错误场景 |
-| 改测试让实现通过 | 测试形同虚设 | `/fix-ci` 明令禁止 + review 看 diff |
-| 手写浮点金额 | 0.1+0.2 问题、四舍五入错 | `MoneyText` + 单测 + 类型命名 `amountCents` |
-| 幻觉依赖或 API | 装不上、运行时报错 | lockfile + 每次类型检查 |
-| 一次提交 800 行 | 无法 review、无法回滚 | commit 规范 + verify 快速失败 |
-| 绕过 mock 校验 | 契约测试假绿 | handler 内 zod 校验 + 出参校验 |
+| AI 常见错误                        | 症状                     | 拦住它的东西                                |
+| ---------------------------------- | ------------------------ | ------------------------------------------- |
+| 在组件里直接 fetch                 | 换后端要改 10 个文件     | ESLint `no-restricted-globals` + boundaries |
+| 跨 feature 引用                    | 模块耦合，删一个崩一片   | `eslint-plugin-boundaries`                  |
+| 复制一份表格"先跑通"               | 两处样式和行为漂移       | review 清单 + 后续重构 commit（有记录）     |
+| 用 useEffect 把 query 数据塞 state | 竞态、闪屏、双请求       | review 清单 + 集成测试断言请求次数          |
+| 只写 happy path                    | 空态一片白、409 时白屏   | 三态检查 + e2e 错误场景                     |
+| 改测试让实现通过                   | 测试形同虚设             | `/fix-ci` 明令禁止 + review 看 diff         |
+| 手写浮点金额                       | 0.1+0.2 问题、四舍五入错 | `MoneyText` + 单测 + 类型命名 `amountCents` |
+| 幻觉依赖或 API                     | 装不上、运行时报错       | lockfile + 每次类型检查                     |
+| 一次提交 800 行                    | 无法 review、无法回滚    | commit 规范 + verify 快速失败               |
+| 绕过 mock 校验                     | 契约测试假绿             | handler 内 zod 校验 + 出参校验              |
 
 ## 7. 过程证据
 
@@ -285,6 +306,7 @@ CI 的作用不只是"跑测试"，而是**给 AI 一个外部的、不可争辩
 
 ```markdown
 ## 2026-11-04 14:20 客户列表：URL 状态
+
 - 任务：把 page/keyword/level 从 useState 迁到 searchParams
 - 给 AI 的上下文：AGENTS.md + 02-architecture.md 第 4 节 + 现有 useResourceList
 - AI 产出：一次成型，但把默认值也写进了 URL
@@ -303,10 +325,10 @@ CI 的作用不只是"跑测试"，而是**给 AI 一个外部的、不可争辩
 
 ## 8. 度量（写进 README）
 
-| 指标 | 目标 | 怎么测 |
-|---|---|---|
-| `pnpm verify` 耗时 | ≤ 120s | 脚本自带计时 |
-| 端点契约覆盖 | 17/17 | `check-contract` 输出 |
-| 新增同类模块成本 | ≤ 1h 且不改 shared | 第三个模块的实际 commit 时间 |
-| 提交到绿的比例 | 100% | CI 记录 |
-| e2e 稳定性 | 连跑 3 次全绿 | 本地 `--repeat-each=3` |
+| 指标               | 目标               | 怎么测                       |
+| ------------------ | ------------------ | ---------------------------- |
+| `pnpm verify` 耗时 | ≤ 120s             | 脚本自带计时                 |
+| 端点契约覆盖       | 17/17              | `check-contract` 输出        |
+| 新增同类模块成本   | ≤ 1h 且不改 shared | 第三个模块的实际 commit 时间 |
+| 提交到绿的比例     | 100%               | CI 记录                      |
+| e2e 稳定性         | 连跑 3 次全绿      | 本地 `--repeat-each=3`       |

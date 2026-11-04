@@ -2,6 +2,13 @@
 
 记录真实的返工与拦截，而不是"AI 一次写完了所有代码"。每条都对应一次提交或一次门禁失败。
 
+## 2026-11-04 11:10 最后一公里：CI e2e、格式门禁与契约校验
+
+- 现象：GitHub Actions 的 `verify` 步骤通过，`test:e2e` 失败；`playwright-report/` 没有生成，失败时 artifact 为空；`pnpm format:check` 有 30 个文件不通过；`test:coverage` 的客户编辑用例在 5s 默认超时。
+- 根因：e2e 用 `getByLabel('手机号')` 精确匹配，但 `ResourceForm` 的 `requiredMark="optional"` 会让 AntD 给非必填 label 追加“（可选）”；Playwright 只配了 `list` reporter，CI 却上传 `playwright-report/`；Prettier 没进 `verify`；coverage 插桩后默认 5s 超时。
+- 处理：e2e 改为 `/手机号/`、`/邮箱/`；reporter 加 HTML，CI 上传 `playwright-report/` 与 `test-results/`；`verify` 首步加 format；Vitest `testTimeout` 调到 15s；补 MoneyInput/DataTable 用例；客户负责人做存在性校验、必填下拉补中文文案；Drawer 改 `size`、修 Descriptions 列宽、修正种子 `paidAt`、路由级 lazy、加 ErrorBoundary。
+- 证据：`pnpm run verify` 13.5s、90 tests；`pnpm run test:coverage` branches 74.93%；构建按路由拆出 customers/orders/detail chunk。e2e 需 push 后由 CI 复验（当前沙箱不能起浏览器）。
+
 ## 2026-11-03 22:25 依赖管理从 npm 切到 pnpm
 
 - 任务：把依赖管理统一到 pnpm（本机已装 12.16.1），同时保证沙箱里还能跑 `pnpm run verify`。

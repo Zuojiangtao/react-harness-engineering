@@ -14,13 +14,13 @@
 
 ## 2. 命令
 
-| 命令 | 作用 | 何时跑 |
-|---|---|---|
-| `pnpm run dev` | 启动（默认 mock 模式） | 开发 |
-| `pnpm run verify` | lint + boundaries + typecheck + test + spec + build | **每次提交前必跑** |
-| `pnpm run test` / `pnpm run test:watch` | 单元与集成测试 | 改逻辑时 |
-| `pnpm run test:e2e` | Playwright | 改交互后 |
-| `pnpm run spec:validate` | `openspec validate --strict` + 需求 ID 追溯 | 改需求后 |
+| 命令                                    | 作用                                                         | 何时跑             |
+| --------------------------------------- | ------------------------------------------------------------ | ------------------ |
+| `pnpm run dev`                          | 启动（默认 mock 模式）                                       | 开发               |
+| `pnpm run verify`                       | format + lint + boundaries + typecheck + test + spec + build | **每次提交前必跑** |
+| `pnpm run test` / `pnpm run test:watch` | 单元与集成测试                                               | 改逻辑时           |
+| `pnpm run test:e2e`                     | Playwright                                                   | 改交互后           |
+| `pnpm run spec:validate`                | `openspec validate --strict` + 需求 ID 追溯                  | 改需求后           |
 
 > OpenAPI 导出与独立 `db:reset` 命令当前未实现：契约以 Zod + 契约测试为准，mock 数据刷新页面即重置。不要把它们写进提交说明或 README 的“已实现”清单。
 
@@ -115,7 +115,7 @@ schema → 失败测试 → handler → 前端类型 → `pnpm run verify`。
 - **Windows**：脚本用 node 实现，不依赖 shell 语法；路径统一 `node:path`。
 - **pnpm**：`nodeLinker` 必须是 `hoisted`（见 `pnpm-workspace.yaml`）。本机文件沙箱无法 realpath 目录 junction，isolated 布局下 `is-odd → is-number` 这类嵌套依赖会 `Cannot find module`；改回 isolated 前先在沙箱里跑一次 `pnpm run verify`。
 - **pnpm-lock.yaml**：pnpm 12 的锁文件可能是**双文档**（boot document + project lockfile），用 `---` 分隔，不是损坏。不要手工删前半段；读依赖图的工具要取最后一个 YAML 文档。
-- **金额**：输入框按"元"、存储按"分"，转换只在 `features/**/form.ts` 与 `MoneyText` 两处。
+- **金额**：输入框按"元"、存储按"分"，转换只在 `shared/ui/resource-form/MoneyInput.tsx` 与 `MoneyText` 两处。
 
 ## 10. 不确定时
 
