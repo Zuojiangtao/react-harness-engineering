@@ -17,8 +17,9 @@ test('[CUS-01][CUS-02][CUS-03] 客户创建、编辑清空、删除主流程', a
   await page.getByRole('option', { name: '合作中' }).click()
   await page.getByLabel('负责人').click()
   await page.getByRole('option', { name: '张伟' }).click()
-  await page.getByLabel('手机号').fill('13900000000')
-  await page.getByLabel('邮箱').fill('e2e@example.com')
+  // 表单用 requiredMark="optional"，AntD 会给非必填 label 追加“（可选）”
+  await page.getByLabel(/手机号/).fill('13900000000')
+  await page.getByLabel(/邮箱/).fill('e2e@example.com')
   await page.getByRole('button', { name: '创建' }).click()
   await expect(page.getByText('已创建')).toBeVisible()
 
@@ -29,8 +30,8 @@ test('[CUS-01][CUS-02][CUS-03] 客户创建、编辑清空、删除主流程', a
 
   // 编辑：清空可选联系方式
   await row.getByRole('button', { name: /编\s*辑/ }).click()
-  await page.getByLabel('手机号').clear()
-  await page.getByLabel('邮箱').clear()
+  await page.getByLabel(/手机号/).clear()
+  await page.getByLabel(/邮箱/).clear()
   await page.getByRole('button', { name: /保\s*存/ }).click()
   await expect(page.getByText('已保存')).toBeVisible()
   await expect(row.getByRole('cell').nth(4)).toHaveText('—')
