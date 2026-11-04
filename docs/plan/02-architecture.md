@@ -102,14 +102,14 @@ rules: {
 
 ## 4. 状态归属
 
-| 状态 | 归属 | 理由 |
-|---|---|---|
-| 服务端数据 | TanStack Query | 缓存、失效、重试、竞态 |
-| 筛选 / 分页 / 排序 | **URL** | 可分享、可后退、刷新不丢 |
-| 表单草稿 | antd Form 实例（非受控） | 少重渲染，`setFields` 可直接回填服务端错误 |
-| 抽屉开关、选中行 | 组件本地 state / antd Table 的 rowSelection | 不需要跨页 |
-| 登录态 | Query + localStorage（mock token） | 刷新保持 |
-| 全局 store | **没有** | 没有跨页客户端共享状态 |
+| 状态               | 归属                                        | 理由                                       |
+| ------------------ | ------------------------------------------- | ------------------------------------------ |
+| 服务端数据         | TanStack Query                              | 缓存、失效、重试、竞态                     |
+| 筛选 / 分页 / 排序 | **URL**                                     | 可分享、可后退、刷新不丢                   |
+| 表单草稿           | antd Form 实例（非受控）                    | 少重渲染，`setFields` 可直接回填服务端错误 |
+| 抽屉开关、选中行   | 组件本地 state / antd Table 的 rowSelection | 不需要跨页                                 |
+| 登录态             | Query + localStorage（mock token）          | 刷新保持                                   |
+| 全局 store         | **没有**                                    | 没有跨页客户端共享状态                     |
 
 ## 5. AntD 集成约束
 
@@ -157,7 +157,7 @@ export type SortState = { field: string; order: 'asc' | 'desc' } | null
 export type DataTableProps<T> = {
   columns: ColumnsType<T>
   rows: T[]
-  rowKey: keyof T & string | ((row: T) => string)
+  rowKey: (keyof T & string) | ((row: T) => string)
   /** 联合类型，天然避免"载入中闪现空态" */
   status: 'loading' | 'error' | 'empty' | 'ready'
   error?: ApiError
@@ -186,10 +186,16 @@ export type DataTableProps<T> = {
 export type FieldConfig<T> =
   | { kind: 'text'; name: keyof T; label: string; placeholder?: string }
   | { kind: 'textarea'; name: keyof T; label: string; rows?: number }
-  | { kind: 'money'; name: keyof T; label: string }        // 元输入 → 分提交
+  | { kind: 'money'; name: keyof T; label: string } // 元输入 → 分提交
   | { kind: 'select'; name: keyof T; label: string; options: Option[] }
-  | { kind: 'asyncSelect'; name: keyof T; label: string
-      load: (keyword: string) => Promise<Option[]>; cacheKey: string; minChars?: number }
+  | {
+      kind: 'asyncSelect'
+      name: keyof T
+      label: string
+      load: (keyword: string) => Promise<Option[]>
+      cacheKey: string
+      minChars?: number
+    }
   | { kind: 'date'; name: keyof T; label: string }
 
 export type ResourceFormProps<T extends FieldValues> = {
@@ -225,14 +231,15 @@ antd Form 自带 `rules`，但我们**不写 rules**——两份规则必然漂�
 async function handleFinish(values: unknown) {
   const parsed = schema.safeParse(values)
   if (!parsed.success) {
-    form.setFields(toFormErrors(parsed.error))   // ZodError → antd 字段错误
+    form.setFields(toFormErrors(parsed.error)) // ZodError → antd 字段错误
     return
   }
   try {
     await onSubmit(parsed.data)
   } catch (e) {
-    if (isApiError(e) && e.fields) form.setFields(toFormErrors(e.fields))  // 422 回填
-    else setFormLevelError(e)                                            // 409/500 顶部 Alert
+    if (isApiError(e) && e.fields)
+      form.setFields(toFormErrors(e.fields)) // 422 回填
+    else setFormLevelError(e) // 409/500 顶部 Alert
   }
 }
 ```
@@ -279,18 +286,18 @@ fetch 失败 / 非 2xx
 
 参考项目是 Vue 3 + antd-vue 4 + Pinia，已有 `AGENTS.md + 按需规则 + Skills + 工具强制` 的分层规范。React 版沿用同一套骨架，只换实现：
 
-| Vue 模板 | React 版 | 说明 |
-|---|---|---|
-| `hooks/useCurd.ts`（fetch/add/edit/del + 防抖 + 删除末页回退） | `useResourceList` + `useResourceMutations` | **保留**末页回退、250ms 防抖这两个细节 |
-| `hooks/useTable.ts` | `DataTable` + URL 状态 | 分页状态从组件搬到 URL |
-| `hooks/useFormModel.ts` + `FormModel.vue` | `ResourceForm` + `Drawer` | 改为 FieldConfig 驱动 |
-| `utils/request.ts`（axios 拦截器 + 401 刷新队列） | `shared/api/client.ts` | 401 用简单跳转，不做刷新队列（无真后端） |
-| `stores/permission.ts` + `asyncRouterMap` | 路由 `handle.roles` + `RequireRole` | 菜单与路由同源，避免两处权限表 |
-| `unplugin-auto-import` | 显式 import | 理由见 5.2 |
-| multi-tab / keep-alive | 不做 | 与本题无关，成本高于收益 |
-| `.codebuddy/rules/*.mdc` + `skills/*/SKILL.md` | `docs/rules.md` + `.claude/commands/*.md` | 同构；AGENTS.md 作为单一入口 |
-| ESLint `no-restricted-imports` 强制自动导入 | ESLint boundaries 强制分层 | 强制点从"导入方式"换成"依赖方向" |
-| `Modal.useModal()` + contextHolder | `App.useApp()` | AntD 6 推荐用法 |
+| Vue 模板                                                       | React 版                                   | 说明                                     |
+| -------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------- |
+| `hooks/useCurd.ts`（fetch/add/edit/del + 防抖 + 删除末页回退） | `useResourceList` + `useResourceMutations` | **保留**末页回退、250ms 防抖这两个细节   |
+| `hooks/useTable.ts`                                            | `DataTable` + URL 状态                     | 分页状态从组件搬到 URL                   |
+| `hooks/useFormModel.ts` + `FormModel.vue`                      | `ResourceForm` + `Drawer`                  | 改为 FieldConfig 驱动                    |
+| `utils/request.ts`（axios 拦截器 + 401 刷新队列）              | `shared/api/client.ts`                     | 401 用简单跳转，不做刷新队列（无真后端） |
+| `stores/permission.ts` + `asyncRouterMap`                      | 路由 `handle.roles` + `RequireRole`        | 菜单与路由同源，避免两处权限表           |
+| `unplugin-auto-import`                                         | 显式 import                                | 理由见 5.2                               |
+| multi-tab / keep-alive                                         | 不做                                       | 与本题无关，成本高于收益                 |
+| `.codebuddy/rules/*.mdc` + `skills/*/SKILL.md`                 | `docs/rules.md` + `.claude/commands/*.md`  | 同构；AGENTS.md 作为单一入口             |
+| ESLint `no-restricted-imports` 强制自动导入                    | ESLint boundaries 强制分层                 | 强制点从"导入方式"换成"依赖方向"         |
+| `Modal.useModal()` + contextHolder                             | `App.useApp()`                             | AntD 6 推荐用法                          |
 
 **不照搬的部分要写进 ADR**：auto-import、Pinia、多标签页都是原模板的合理选择，但不适配本项目的 16 小时约束与"AI 可读性优先"的目标。能说清"为什么不照搬"，比照搬更能体现判断力。
 
@@ -304,12 +311,12 @@ fetch 失败 / 非 2xx
 
 ## 12. 关键取舍（写进 ADR）
 
-| 决策 | 放弃的方案 | 原因 |
-|---|---|---|
-| SPA（Vite） | Next.js | 后台无 SSR/SEO 需求，少一层运行时 |
-| AntD 6 + 薄封装 | ProComponents / 自研组件库 | ProTable 会把考点外包；自研成本过高 |
-| 显式 import | unplugin 自动导入 | AI 与 review 需要可追踪的依赖图 |
-| TanStack Query | Redux / Zustand | 只有服务端状态，没有跨页客户端状态 |
-| Zod 单一校验 | antd rules + zod 双写 | 双写必漂移；422 回填也只需一套映射 |
-| 抽屉式表单 | 独立编辑页 | 列表上下文不丢，路径短 |
-| 不做多标签页 | 照搬 Vue 模板 | 与题目无关，keep-alive 与 URL 状态会打架 |
+| 决策            | 放弃的方案                 | 原因                                     |
+| --------------- | -------------------------- | ---------------------------------------- |
+| SPA（Vite）     | Next.js                    | 后台无 SSR/SEO 需求，少一层运行时        |
+| AntD 6 + 薄封装 | ProComponents / 自研组件库 | ProTable 会把考点外包；自研成本过高      |
+| 显式 import     | unplugin 自动导入          | AI 与 review 需要可追踪的依赖图          |
+| TanStack Query  | Redux / Zustand            | 只有服务端状态，没有跨页客户端状态       |
+| Zod 单一校验    | antd rules + zod 双写      | 双写必漂移；422 回填也只需一套映射       |
+| 抽屉式表单      | 独立编辑页                 | 列表上下文不丢，路径短                   |
+| 不做多标签页    | 照搬 Vue 模板              | 与题目无关，keep-alive 与 URL 状态会打架 |

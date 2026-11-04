@@ -39,7 +39,11 @@ export function AppLayout() {
             <Tag color={data?.user.role === 'admin' ? 'blue' : 'default'}>
               {data?.user.role === 'admin' ? '管理员' : '只读'}
             </Tag>
-            <Button icon={<LogoutOutlined />} onClick={() => logout.mutate()} loading={logout.isPending}>
+            <Button
+              icon={<LogoutOutlined />}
+              onClick={() => logout.mutate()}
+              loading={logout.isPending}
+            >
               退出
             </Button>
           </Space>

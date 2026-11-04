@@ -9,47 +9,47 @@
 
 ## 2. 分层与取舍
 
-| 层 | 占比（数量） | 覆盖对象 | 不做什么 |
-|---|---|---|---|
-| 单元 | 40% | 格式化、URL 序列化、状态机、zod schema、错误归一化 | 不测第三方组件库 |
-| 组件 | 25% | DataTable 三态、ResourceForm 校验与 422 回填、FilterBar、ConfirmDialog | 不做整页快照 |
-| 集成 | 25% | 列表查询链路、创建/编辑/删除、状态流转（MSW + RTL） | 不重复测单元已覆盖的分支 |
-| e2e | 10% | 登录、客户 CRUD、订单生命周期、viewer 只读、URL 还原 | 不覆盖边界校验细节 |
+| 层   | 占比（数量） | 覆盖对象                                                               | 不做什么                 |
+| ---- | ------------ | ---------------------------------------------------------------------- | ------------------------ |
+| 单元 | 40%          | 格式化、URL 序列化、状态机、zod schema、错误归一化                     | 不测第三方组件库         |
+| 组件 | 25%          | DataTable 三态、ResourceForm 校验与 422 回填、FilterBar、ConfirmDialog | 不做整页快照             |
+| 集成 | 25%          | 列表查询链路、创建/编辑/删除、状态流转（MSW + RTL）                    | 不重复测单元已覆盖的分支 |
+| e2e  | 10%          | 登录、客户 CRUD、订单生命周期、viewer 只读、URL 还原                   | 不覆盖边界校验细节       |
 
 ## 3. 用例清单
 
 ### 单元
 
-| 对象 | 用例 | 断言要点 |
-|---|---|---|
-| `format.ts` | 分 → 元、负值、千分位、0 | `1234567` → `¥12,345.67` |
-| `format.ts` | 日期格式化、无效值 | 空值显示 `—` 而不是 `Invalid Date` |
-| `useUrlState` | 默认值不进 URL；非法值回落；数字反序列化 | `?page=abc` → 1，且不抛错 |
-| `order-machine.ts` | 合法/非法流转矩阵（4 状态 × 3 动作） | 非法返回原因码 |
-| `schema` | 名称长度、手机号、金额上下界、空字符串转 undefined | 错误 path 精确到字段 |
-| `client.ts` | 非 2xx 且 body 非法 JSON → `INTERNAL`；422 → 带 fields | UI 永远拿到稳定结构 |
+| 对象               | 用例                                                   | 断言要点                           |
+| ------------------ | ------------------------------------------------------ | ---------------------------------- |
+| `format.ts`        | 分 → 元、负值、千分位、0                               | `1234567` → `¥12,345.67`           |
+| `format.ts`        | 日期格式化、无效值                                     | 空值显示 `—` 而不是 `Invalid Date` |
+| `useUrlState`      | 默认值不进 URL；非法值回落；数字反序列化               | `?page=abc` → 1，且不抛错          |
+| `order-machine.ts` | 合法/非法流转矩阵（4 状态 × 3 动作）                   | 非法返回原因码                     |
+| `schema`           | 名称长度、手机号、金额上下界、空字符串转 undefined     | 错误 path 精确到字段               |
+| `client.ts`        | 非 2xx 且 body 非法 JSON → `INTERNAL`；422 → 带 fields | UI 永远拿到稳定结构                |
 
 ### 组件
 
-| 组件 | 用例 |
-|---|---|
-| DataTable | loading 时只出 loading、不闪空态；error 显示重试并可点击；empty 显示行动按钮；ready 渲染行与操作 |
-| DataTable | 点击表头触发 `onQueryChange(sort)`；排序箭头与 URL 一致；分页边界禁用 |
-| ResourceForm | 必填为空时提交被拦、错误定位到字段；服务端 422 回填到对应字段；提交中禁用按钮防重复 |
-| AsyncSelect | 输入 2 字符才请求；防抖只发一次；无结果时显示空态 |
-| ConfirmDialog | Esc 关闭、焦点回到触发按钮、危险操作按钮文案包含对象名 |
+| 组件          | 用例                                                                                             |
+| ------------- | ------------------------------------------------------------------------------------------------ |
+| DataTable     | loading 时只出 loading、不闪空态；error 显示重试并可点击；empty 显示行动按钮；ready 渲染行与操作 |
+| DataTable     | 点击表头触发 `onQueryChange(sort)`；排序箭头与 URL 一致；分页边界禁用                            |
+| ResourceForm  | 必填为空时提交被拦、错误定位到字段；服务端 422 回填到对应字段；提交中禁用按钮防重复              |
+| AsyncSelect   | 输入 2 字符才请求；防抖只发一次；无结果时显示空态                                                |
+| ConfirmDialog | Esc 关闭、焦点回到触发按钮、危险操作按钮文案包含对象名                                           |
 
 ### 集成（MSW）
 
-| 场景 | 步骤 | 断言 |
-|---|---|---|
-| 列表筛选 | 输入关键词 → 选 level | 请求只发一次（防抖生效）；URL 含参数；结果行数正确 |
-| 创建 | 打开抽屉 → 填表 → 提交 | POST body 金额为分；列表出现新行；toast 出现 |
-| 校验失败 | 提交重名/超长 | 不关闭抽屉；字段下方显示服务端文案 |
-| 删除冲突 | 删除有订单的客户 | 对话框展示"有 3 个订单"；列表不变 |
-| 状态流转 | paid 订单点退款 | 行状态变为"已退款"；再点其他动作按钮消失 |
-| 非法流转 | 直接调 transition 到 paid | 提示"当前状态不允许"；回滚为原状态 |
-| 权限 | viewer 调删除接口 | 403 且 UI 提示无权限（不是静默失败） |
+| 场景     | 步骤                      | 断言                                               |
+| -------- | ------------------------- | -------------------------------------------------- |
+| 列表筛选 | 输入关键词 → 选 level     | 请求只发一次（防抖生效）；URL 含参数；结果行数正确 |
+| 创建     | 打开抽屉 → 填表 → 提交    | POST body 金额为分；列表出现新行；toast 出现       |
+| 校验失败 | 提交重名/超长             | 不关闭抽屉；字段下方显示服务端文案                 |
+| 删除冲突 | 删除有订单的客户          | 对话框展示"有 3 个订单"；列表不变                  |
+| 状态流转 | paid 订单点退款           | 行状态变为"已退款"；再点其他动作按钮消失           |
+| 非法流转 | 直接调 transition 到 paid | 提示"当前状态不允许"；回滚为原状态                 |
+| 权限     | viewer 调删除接口         | 403 且 UI 提示无权限（不是静默失败）               |
 
 ### e2e（Playwright）
 
@@ -70,7 +70,9 @@ export function renderWithProviders(ui: ReactElement, { route = '/' } = {}) {
   })
   return render(
     <ConfigProvider locale={zhCN}>
-      <AntdApp>   {/* App 提供 message/modal/notification 上下文，缺了它 useApp() 会报错 */}
+      <AntdApp>
+        {' '}
+        {/* App 提供 message/modal/notification 上下文，缺了它 useApp() 会报错 */}
         <QueryClientProvider client={queryClient}>
           <MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>
         </QueryClientProvider>
@@ -84,7 +86,10 @@ export function renderWithProviders(ui: ReactElement, { route = '/' } = {}) {
 // test/setup.ts
 import { server } from './msw/server'
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
-afterEach(() => { server.resetHandlers(); resetDb() })   // 状态隔离，避免用例互相污染
+afterEach(() => {
+  server.resetHandlers()
+  resetDb()
+}) // 状态隔离，避免用例互相污染
 afterAll(() => server.close())
 ```
 
@@ -101,10 +106,20 @@ afterAll(() => server.close())
 ```ts
 // test/setup.ts 追加
 window.matchMedia ??= ((query: string) => ({
-  matches: false, media: query, onchange: null,
-  addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, dispatchEvent: () => false,
+  matches: false,
+  media: query,
+  onchange: null,
+  addListener() {},
+  removeListener() {},
+  addEventListener() {},
+  removeEventListener() {},
+  dispatchEvent: () => false,
 })) as typeof window.matchMedia
-globalThis.ResizeObserver ??= class { observe() {} unobserve() {} disconnect() {} }
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
 ```
 
 - `renderWithProviders` 必须包 `ConfigProvider + App`，否则 `App.useApp()` 抛错、`message` 不显示。

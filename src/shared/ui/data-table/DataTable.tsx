@@ -11,7 +11,7 @@ export type SortState = { field: string; order: 'asc' | 'desc' } | null
 export type DataTableProps<T extends object> = {
   columns: ColumnsType<T>
   rows: T[]
-  rowKey: keyof T & string | ((row: T) => string)
+  rowKey: (keyof T & string) | ((row: T) => string)
   /** 联合类型，天然避免“载入中闪现空态” */
   status: 'loading' | 'error' | 'empty' | 'ready'
   error?: ApiError | null

@@ -3,12 +3,7 @@ import { customerHandlers } from './customers'
 import { memberHandlers } from './members'
 import { orderHandlers } from './orders'
 
-export const handlers = [
-  ...authHandlers,
-  ...customerHandlers,
-  ...orderHandlers,
-  ...memberHandlers,
-]
+export const handlers = [...authHandlers, ...customerHandlers, ...orderHandlers, ...memberHandlers]
 
 /** 契约测试与文档用的端点清单；新增接口必须同步这里 */
 export const ENDPOINTS = [

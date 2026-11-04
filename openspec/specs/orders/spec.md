@@ -1,6 +1,7 @@
 # orders Specification
 
 ## Purpose
+
 为客户创建与跟进订单：列表筛选、整数分金额、只读客户快照，以及严格的状态机与删除限制。状态只能沿 draft→paid→refunded 等固定路径流转，终态只读。
 
 ## Requirements

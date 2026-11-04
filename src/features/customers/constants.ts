@@ -24,7 +24,10 @@ export const INDUSTRY_OPTIONS = Object.entries(INDUSTRY_LABELS).map(([value, lab
   label,
 }))
 
-export const LEVEL_OPTIONS = Object.entries(LEVEL_LABELS).map(([value, label]) => ({ value, label }))
+export const LEVEL_OPTIONS = Object.entries(LEVEL_LABELS).map(([value, label]) => ({
+  value,
+  label,
+}))
 
 export const STATUS_OPTIONS = Object.entries(STATUS_LABELS).map(([value, label]) => ({
   value,

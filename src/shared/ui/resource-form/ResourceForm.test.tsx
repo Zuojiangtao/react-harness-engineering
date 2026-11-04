@@ -10,7 +10,9 @@ import { renderWithProviders } from '@/test/utils'
 type Values = { name: string }
 
 const schema = z.object({ name: z.string().trim().min(2, '客户名称至少 2 个字') })
-const fields: FieldConfig<Values>[] = [{ kind: 'text', name: 'name', label: '客户名称', required: true }]
+const fields: FieldConfig<Values>[] = [
+  { kind: 'text', name: 'name', label: '客户名称', required: true },
+]
 
 describe('ResourceForm', () => {
   it('空的必填项被 Zod 拦下，且错误定位到字段', async () => {

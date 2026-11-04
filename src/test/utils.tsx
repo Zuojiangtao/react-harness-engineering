@@ -16,7 +16,10 @@ export function createTestQueryClient(): QueryClient {
 
 export function renderWithProviders(
   ui: ReactElement,
-  { route = '/', queryClient = createTestQueryClient() }: { route?: string; queryClient?: QueryClient } = {},
+  {
+    route = '/',
+    queryClient = createTestQueryClient(),
+  }: { route?: string; queryClient?: QueryClient } = {},
 ): ReturnType<typeof render> & { queryClient: QueryClient } {
   const result = render(
     <ConfigProvider locale={zhCN}>

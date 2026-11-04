@@ -23,12 +23,20 @@ export const pageSchema = <T extends z.ZodTypeAny>(item: T) =>
 // 统一错误体
 export const apiErrorSchema = z.object({
   code: z.enum([
-    'VALIDATION_ERROR', 'UNAUTHORIZED', 'FORBIDDEN', 'NOT_FOUND',
-    'CONFLICT', 'INVALID_TRANSITION', 'CUSTOMER_HAS_ORDERS',
-    'CUSTOMER_INACTIVE', 'ORDER_PAID', 'STALE_WRITE', 'INTERNAL',
+    'VALIDATION_ERROR',
+    'UNAUTHORIZED',
+    'FORBIDDEN',
+    'NOT_FOUND',
+    'CONFLICT',
+    'INVALID_TRANSITION',
+    'CUSTOMER_HAS_ORDERS',
+    'CUSTOMER_INACTIVE',
+    'ORDER_PAID',
+    'STALE_WRITE',
+    'INTERNAL',
   ]),
   message: z.string(),
-  fields: z.record(z.string(), z.string()).optional(),   // 字段级错误，key 为字段名
+  fields: z.record(z.string(), z.string()).optional(), // 字段级错误，key 为字段名
 })
 export type ApiErrorBody = z.infer<typeof apiErrorSchema>
 ```
@@ -42,25 +50,25 @@ export type ApiErrorBody = z.infer<typeof apiErrorSchema>
 
 ## 3. 端点表
 
-| # | Method | Path | 请求 | 响应 | 主要错误 |
-|---|---|---|---|---|---|
-| 1 | POST | `/api/auth/login` | `{ email, password }` | `{ token, user }` | 401 |
-| 2 | GET | `/api/auth/me` | — | `{ user }` | 401 |
-| 3 | POST | `/api/auth/logout` | — | 204 | — |
-| 4 | GET | `/api/customers` | query：`page,pageSize,keyword,level,status,sort` | `Page<Customer>` | 400 |
-| 5 | POST | `/api/customers` | `CustomerCreate` | `Customer`（201） | 422 |
-| 6 | GET | `/api/customers/:id` | — | `Customer` | 404 |
-| 7 | PATCH | `/api/customers/:id` | `CustomerUpdate`（含 `updatedAt` 乐观锁） | `Customer` | 404/409/422 |
-| 8 | DELETE | `/api/customers/:id` | — | 204 | 404/409 `CUSTOMER_HAS_ORDERS` |
-| 9 | POST | `/api/customers/bulk-delete` | `{ ids: string[] }` | `{ deleted: string[], failed: {id,code}[] }`（207） | 400 |
-| 10 | GET | `/api/customers/options` | `?keyword=` | `{ items: {id,name,status}[] }` | — |
-| 11 | GET | `/api/orders` | query：`page,pageSize,keyword,status,customerId,sort` | `Page<Order>` | 400 |
-| 12 | POST | `/api/orders` | `OrderCreate` | `Order`（201） | 422 |
-| 13 | GET | `/api/orders/:id` | — | `Order` | 404 |
-| 14 | PATCH | `/api/orders/:id` | `OrderUpdate`（不含 status） | `Order` | 404/409/422 |
-| 15 | DELETE | `/api/orders/:id` | — | 204 | 404/409 `ORDER_PAID` |
-| 16 | POST | `/api/orders/:id/transition` | `{ to: 'paid' \| 'cancelled' \| 'refunded' }` | `Order` | 409 `INVALID_TRANSITION` |
-| 17 | GET | `/api/members` | — | `{ items: Member[] }` | — |
+| #   | Method | Path                         | 请求                                                  | 响应                                                | 主要错误                      |
+| --- | ------ | ---------------------------- | ----------------------------------------------------- | --------------------------------------------------- | ----------------------------- |
+| 1   | POST   | `/api/auth/login`            | `{ email, password }`                                 | `{ token, user }`                                   | 401                           |
+| 2   | GET    | `/api/auth/me`               | —                                                     | `{ user }`                                          | 401                           |
+| 3   | POST   | `/api/auth/logout`           | —                                                     | 204                                                 | —                             |
+| 4   | GET    | `/api/customers`             | query：`page,pageSize,keyword,level,status,sort`      | `Page<Customer>`                                    | 400                           |
+| 5   | POST   | `/api/customers`             | `CustomerCreate`                                      | `Customer`（201）                                   | 422                           |
+| 6   | GET    | `/api/customers/:id`         | —                                                     | `Customer`                                          | 404                           |
+| 7   | PATCH  | `/api/customers/:id`         | `CustomerUpdate`（含 `updatedAt` 乐观锁）             | `Customer`                                          | 404/409/422                   |
+| 8   | DELETE | `/api/customers/:id`         | —                                                     | 204                                                 | 404/409 `CUSTOMER_HAS_ORDERS` |
+| 9   | POST   | `/api/customers/bulk-delete` | `{ ids: string[] }`                                   | `{ deleted: string[], failed: {id,code}[] }`（207） | 400                           |
+| 10  | GET    | `/api/customers/options`     | `?keyword=`                                           | `{ items: {id,name,status}[] }`                     | —                             |
+| 11  | GET    | `/api/orders`                | query：`page,pageSize,keyword,status,customerId,sort` | `Page<Order>`                                       | 400                           |
+| 12  | POST   | `/api/orders`                | `OrderCreate`                                         | `Order`（201）                                      | 422                           |
+| 13  | GET    | `/api/orders/:id`            | —                                                     | `Order`                                             | 404                           |
+| 14  | PATCH  | `/api/orders/:id`            | `OrderUpdate`（不含 status）                          | `Order`                                             | 404/409/422                   |
+| 15  | DELETE | `/api/orders/:id`            | —                                                     | 204                                                 | 404/409 `ORDER_PAID`          |
+| 16  | POST   | `/api/orders/:id/transition` | `{ to: 'paid' \| 'cancelled' \| 'refunded' }`         | `Order`                                             | 409 `INVALID_TRANSITION`      |
+| 17  | GET    | `/api/members`               | —                                                     | `{ items: Member[] }`                               | —                             |
 
 **订单列表的读模型**：`Order` 响应内联 `customer: { id, name }` 快照，避免前端为每行再查客户（N+1）。这不是冗余，是面向列表的读模型设计，写进 ADR。
 
@@ -100,7 +108,7 @@ export const customerCreateSchema = customerSchema
 
 export const customerUpdateSchema = customerCreateSchema
   .partial()
-  .extend({ updatedAt: z.iso.datetime() })   // 乐观锁令牌
+  .extend({ updatedAt: z.iso.datetime() }) // 乐观锁令牌
 
 export const customerFiltersSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -117,7 +125,7 @@ export const orderSchema = z.object({
   id: z.string().startsWith('ord_'),
   orderNo: z.string().regex(/^ORD-\d{8}-\d{4}$/),
   customerId: z.string().startsWith('cus_'),
-  customer: z.object({ id: z.string(), name: z.string() }),   // 列表读模型
+  customer: z.object({ id: z.string(), name: z.string() }), // 列表读模型
   amountCents: z.number().int().min(1).max(100_000_000),
   status: z.enum(['draft', 'paid', 'refunded', 'cancelled']),
   paidAt: z.iso.datetime().nullable(),
@@ -133,8 +141,7 @@ export const orderCreateSchema = z.object({
 })
 
 /** 注意：update 不含 status —— 状态只能走 transition 接口 */
-export const orderUpdateSchema = orderCreateSchema.partial()
-  .extend({ updatedAt: z.iso.datetime() })
+export const orderUpdateSchema = orderCreateSchema.partial().extend({ updatedAt: z.iso.datetime() })
 
 export const transitionSchema = z.object({
   to: z.enum(['paid', 'cancelled', 'refunded']),
@@ -175,7 +182,7 @@ const envSchema = z.object({
   VITE_API_BASE_URL: z.string().default('/api'),
   VITE_MOCK_LATENCY_MS: z.coerce.number().int().min(0).max(3000).default(250),
 })
-export const env = envSchema.parse(import.meta.env)   // 非法配置在启动即失败
+export const env = envSchema.parse(import.meta.env) // 非法配置在启动即失败
 ```
 
 ```ts
@@ -214,13 +221,13 @@ CI 里加一步 `git diff --exit-code contract/`：schema 改了但没重新导�
 
 ## 9. 契约测试
 
-| 测试 | 做什么 | 抓什么 |
-|---|---|---|
-| 端点覆盖 | 遍历端点注册表，断言每个 method+path 都有 handler | 漏实现接口 |
-| 入参校验 | 用非法 body 调 handler，断言 422 且 `fields` 有对应键 | 校验缺失 |
-| 出参校验 | 每个端点返回体必须通过对应 zod schema | mock 与类型漂移 |
-| 错误形状 | 401/403/404/409 的 body 必须通过 `apiErrorSchema` | 前端错误分支失效 |
-| 种子一致性 | `customerId` 外键都存在、订单号唯一 | 假数据自相矛盾 |
+| 测试       | 做什么                                                | 抓什么           |
+| ---------- | ----------------------------------------------------- | ---------------- |
+| 端点覆盖   | 遍历端点注册表，断言每个 method+path 都有 handler     | 漏实现接口       |
+| 入参校验   | 用非法 body 调 handler，断言 422 且 `fields` 有对应键 | 校验缺失         |
+| 出参校验   | 每个端点返回体必须通过对应 zod schema                 | mock 与类型漂移  |
+| 错误形状   | 401/403/404/409 的 body 必须通过 `apiErrorSchema`     | 前端错误分支失效 |
+| 种子一致性 | `customerId` 外键都存在、订单号唯一                   | 假数据自相矛盾   |
 
 端点注册表同时驱动覆盖率统计：`17 个端点 / 17 个有测试` 写进 README。
 

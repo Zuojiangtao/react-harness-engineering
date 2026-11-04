@@ -9,14 +9,14 @@
 
 ## 决策
 
-| 领域 | 选择 | 放弃 |
-|---|---|---|
-| 构建 | Vite + React 19 + TypeScript | Next.js（无 SSR/SEO 需求，多一层运行时） |
-| 组件 | Ant Design 6 + 薄封装 | ProComponents（会把考点外包）、自研组件库（成本过高） |
-| 服务端状态 | TanStack Query | Redux / Zustand（没有跨页客户端状态） |
-| 契约 | Zod 4 单一来源 | 手写 OpenAPI（会漂移）、Yup（类型推导弱） |
-| Mock | MSW（网络层） | 组件内假数据（换后端要改业务代码）、json-server（多一个进程） |
-| 路由 | React Router 7 | TanStack Router（团队更熟 RR，且本题路由简单） |
+| 领域       | 选择                         | 放弃                                                          |
+| ---------- | ---------------------------- | ------------------------------------------------------------- |
+| 构建       | Vite + React 19 + TypeScript | Next.js（无 SSR/SEO 需求，多一层运行时）                      |
+| 组件       | Ant Design 6 + 薄封装        | ProComponents（会把考点外包）、自研组件库（成本过高）         |
+| 服务端状态 | TanStack Query               | Redux / Zustand（没有跨页客户端状态）                         |
+| 契约       | Zod 4 单一来源               | 手写 OpenAPI（会漂移）、Yup（类型推导弱）                     |
+| Mock       | MSW（网络层）                | 组件内假数据（换后端要改业务代码）、json-server（多一个进程） |
+| 路由       | React Router 7               | TanStack Router（团队更熟 RR，且本题路由简单）                |
 
 ## 后果
 

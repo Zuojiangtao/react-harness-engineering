@@ -24,8 +24,7 @@ export function useOrderMutations() {
   })
   const remove = useMutation({ mutationFn: ordersApi.remove, onSuccess: invalidate })
   const transition = useMutation({
-    mutationFn: ({ id, to }: { id: string; to: TransitionTarget }) =>
-      ordersApi.transition(id, to),
+    mutationFn: ({ id, to }: { id: string; to: TransitionTarget }) => ordersApi.transition(id, to),
     onSuccess: invalidate,
   })
 
