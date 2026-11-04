@@ -1,4 +1,4 @@
-﻿import { http } from 'msw'
+import { http } from 'msw'
 import {
   orderCreateSchema,
   orderFiltersSchema,
@@ -8,7 +8,7 @@ import {
   pageSchema,
   type Order,
 } from '../../schema'
-import { getDb } from '../db'
+import { getDb, type MockDb } from '../db'
 import {
   API_PREFIX,
   currentUser,
@@ -48,6 +48,23 @@ function sortOrders(items: Order[], sort: string): Order[] {
 
 function findCustomer(customerId: string) {
   return getDb().customers.find((customer) => customer.id === customerId)
+}
+
+/**
+ * 按自然日发号：取“已发出的最大值”和“现存订单最大值”中的较大者 + 1。
+ * 只数现存订单会在删除后复用号码。
+ */
+function nextOrderSequence(db: MockDb, day: string): number {
+  const prefix = `ORD-${day}-`
+  const maxExisting = db.orders.reduce((max, order) => {
+    if (!order.orderNo.startsWith(prefix)) return max
+    const value = Number(order.orderNo.slice(prefix.length))
+    return Number.isFinite(value) ? Math.max(max, value) : max
+  }, db.orderSequences[day] ?? 0)
+
+  const next = maxExisting + 1
+  db.orderSequences[day] = next
+  return next
 }
 
 export const orderHandlers = [
@@ -107,7 +124,7 @@ export const orderHandlers = [
     const db = getDb()
     const now = new Date().toISOString()
     const day = now.slice(0, 10).replace(/-/g, '')
-    const sequence = db.orders.filter((order) => order.orderNo.startsWith(`ORD-${day}`)).length + 1
+    const sequence = nextOrderSequence(db, day)
     const order: Order = {
       id: nextId(
         'ord_',
@@ -184,8 +201,12 @@ export const orderHandlers = [
     const db = getDb()
     const index = db.orders.findIndex((item) => item.id === params.id)
     if (index < 0) return fail(404, 'NOT_FOUND', '订单不存在')
-    if (db.orders[index].status === 'paid') {
+    const status = db.orders[index].status
+    if (status === 'paid') {
       return fail(409, 'ORDER_PAID', '已收款订单不可删除，请先退款')
+    }
+    if (status === 'refunded' || status === 'cancelled') {
+      return fail(409, 'CONFLICT', '终态订单不可删除')
     }
     db.orders.splice(index, 1)
     return noContent()

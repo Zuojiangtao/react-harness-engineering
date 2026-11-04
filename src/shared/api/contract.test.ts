@@ -197,6 +197,45 @@ describe('订单接口', () => {
     if (isApiError(error)) expect(error.code).toBe('ORDER_PAID')
   })
 
+  it.each(['ord_003', 'ord_004'])('[ORD-04] 终态订单 %s 不可删除', async (id) => {
+    await loginAs('admin')
+    const error = await requestVoid(`/orders/${id}`).catch((caught: unknown) => caught)
+    expect(isApiError(error)).toBe(true)
+    if (isApiError(error)) {
+      expect(error.status).toBe(409)
+      expect(error.code).toBe('CONFLICT')
+    }
+    const still = await request(`/orders/${id}`, orderSchema)
+    expect(still.id).toBe(id)
+  })
+
+  it('删除当天订单后新建不会复用订单号', async () => {
+    await loginAs('admin')
+    const first = await request('/orders', orderSchema, {
+      method: 'POST',
+      body: { customerId: 'cus_001', amountCents: 1000 },
+    })
+    const second = await request('/orders', orderSchema, {
+      method: 'POST',
+      body: { customerId: 'cus_001', amountCents: 1000 },
+    })
+    await requestVoid(`/orders/${first.id}`)
+
+    const third = await request('/orders', orderSchema, {
+      method: 'POST',
+      body: { customerId: 'cus_001', amountCents: 1000 },
+    })
+    expect(third.orderNo).not.toBe(second.orderNo)
+    expect(new Set([first.orderNo, second.orderNo, third.orderNo]).size).toBe(3)
+
+    await requestVoid(`/orders/${third.id}`)
+    const fourth = await request('/orders', orderSchema, {
+      method: 'POST',
+      body: { customerId: 'cus_001', amountCents: 1000 },
+    })
+    expect(fourth.orderNo).not.toBe(third.orderNo)
+  })
+
   it('创建订单金额按分保存，初始为 draft', async () => {
     await loginAs('admin')
     const created = await request('/orders', orderSchema, {

@@ -48,12 +48,17 @@
 
 ### Requirement: [ORD-04] 已收款订单不可删除
 
-系统 SHALL 拒绝删除 paid 订单并返回 409 `ORDER_PAID`；终态订单只读。
+系统 SHALL 拒绝删除 paid 订单并返回 409 `ORDER_PAID`；refunded / cancelled 终态订单也不可删除，返回 409 `CONFLICT`；终态订单只读。
 
 #### Scenario: 删除已收款订单
 
 - **WHEN** 用户删除 paid 订单
 - **THEN** 返回 409，提示「已收款订单不可删除，请先退款」
+
+#### Scenario: 删除已退款或已取消订单
+
+- **WHEN** 用户删除 refunded 或 cancelled 订单
+- **THEN** 返回 409 `CONFLICT`，订单仍然存在
 
 ### Requirement: [ORD-05] 订单写操作仅限管理员
 
