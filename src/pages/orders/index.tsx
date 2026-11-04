@@ -185,7 +185,7 @@ export default function OrdersPage() {
 
       <Drawer
         title={drawer?.mode === 'edit' ? '编辑订单' : '新建订单'}
-        width={560}
+        size={560}
         open={Boolean(drawer)}
         onClose={() => setDrawer(null)}
         destroyOnHidden

@@ -192,7 +192,7 @@ export default function CustomersPage() {
 
       <Drawer
         title={drawer?.mode === 'edit' ? '编辑客户' : '新建客户'}
-        width={560}
+        size={560}
         open={Boolean(drawer)}
         onClose={() => setDrawer(null)}
         destroyOnHidden

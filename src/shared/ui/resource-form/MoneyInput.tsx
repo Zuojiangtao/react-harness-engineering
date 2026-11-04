@@ -18,7 +18,7 @@ export function MoneyInput({
       style={{ width: '100%' }}
       min={0}
       precision={2}
-      addonBefore="¥"
+      prefix="¥"
       placeholder={placeholder ?? '0.00'}
       value={value === undefined || value === null ? undefined : value / 100}
       onChange={(next) => onChange?.(next === null ? undefined : Math.round(next * 100))}

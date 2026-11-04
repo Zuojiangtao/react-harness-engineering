@@ -3,10 +3,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons'
 import { Badge, Button, Card, Descriptions, Space, Tag, Typography } from 'antd'
 import { useNavigate, useParams } from 'react-router-dom'
 import { type ApiError } from '@/shared/api/errors'
-import {
-  ORDER_DEFAULT_FILTERS,
-  type OrderFilters,
-} from '@/shared/api/schema'
+import { ORDER_DEFAULT_FILTERS, type OrderFilters } from '@/shared/api/schema'
 import { useCustomer, useMembers } from '@/features/customers/hooks'
 import { INDUSTRY_LABELS, LEVEL_LABELS, STATUS_LABELS } from '@/features/customers/constants'
 import { buildOrderColumns } from '@/features/orders/columns'
@@ -95,9 +92,7 @@ export default function CustomerDetailPage() {
             <Descriptions.Item label="创建时间">
               {formatDateTime(customer.createdAt)}
             </Descriptions.Item>
-            <Descriptions.Item label="备注" span={3}>
-              {customer.note ?? '—'}
-            </Descriptions.Item>
+            <Descriptions.Item label="备注">{customer.note ?? '—'}</Descriptions.Item>
           </Descriptions>
         ) : null}
       </Card>
