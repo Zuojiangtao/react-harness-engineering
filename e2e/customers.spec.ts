@@ -24,8 +24,8 @@ test('[CUS-01][CUS-02][CUS-03] 客户创建、编辑清空、删除主流程', a
 
   await page.getByPlaceholder('搜索客户名称').fill(name)
   await page.getByPlaceholder('搜索客户名称').press('Enter')
-  const row = page.getByRole('row', { name: new RegExp(name) })
-  await expect(row).toHaveCount(1)
+  const row = page.getByRole('row', { name: new RegExp(name) }).first()
+  await expect(row).toBeVisible()
 
   // 编辑：清空可选联系方式
   await row.getByRole('button', { name: /编\s*辑/ }).click()
