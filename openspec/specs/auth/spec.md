@@ -23,13 +23,18 @@ token 失效时 MUST 清理并跳转登录页，登录后回到原地址。
 
 ### Requirement: [AUTH-02] viewer 只读
 
-系统 SHALL 对 viewer 隐藏新建、编辑、删除、状态流转入口，并禁止其访问写操作路由。
-接口层 MUST 返回 403，前端隐藏不是唯一防线。
+系统 SHALL 对 viewer 隐藏新建、编辑、删除、状态流转入口。
+接口层 MUST 对写操作返回 403，前端隐藏不是唯一防线。编辑使用列表页 Drawer，不存在独立的写操作路由。
 
-#### Scenario: 直接访问受限路由
+#### Scenario: viewer 看不到写入口
 
-- **WHEN** viewer 在地址栏输入客户编辑地址
-- **THEN** 被重定向到列表页并提示无权限
+- **WHEN** viewer 登录后查看客户列表
+- **THEN** 页面不渲染新建、编辑、删除入口
+
+#### Scenario: viewer 直接调用写接口
+
+- **WHEN** viewer 直接调用 `POST /api/customers`
+- **THEN** 返回 403 `FORBIDDEN`
 
 ### Requirement: [AUTH-03] 403 不打断当前上下文
 

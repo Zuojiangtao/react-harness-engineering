@@ -37,7 +37,7 @@
 
 ## 6. 权限
 
-- 路由 `handle.roles` + `RequireRole`；菜单与路由同源。
+- `RequireAuth` 负责登录态；写入口按 `useCurrentUser().user.role` 裁剪。编辑使用列表页 Drawer，不存在独立写路由；接口层 403 是最终防线。
 - 按钮按角色不渲染（不是 disabled）；接口层仍要 403。
 - 401 清 token 并跳登录，带 `redirect` 参数。
 

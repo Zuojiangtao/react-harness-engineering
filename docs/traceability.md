@@ -16,7 +16,7 @@
 | ORD-04  | 已收款/终态不可删除                            | `handlers/orders.ts`、`pages/orders/index.tsx`                                                      | `contract.test.ts`（ORD-04：paid/refunded/cancelled）、`orders.test.tsx`               |
 | ORD-05  | 订单写操作仅管理员                             | `handlers/orders.ts`                                                                                | `contract.test.ts`（ORD-05）                                                           |
 | AUTH-01 | 登录、会话保持与 401 失效                      | `features/auth/*`、`app/guard.tsx`、`app/session.ts`、`shared/api/client.ts`                        | `contract.test.ts`（AUTH-01）、`client.test.ts`、`session.test.ts`、`e2e/auth.spec.ts` |
-| AUTH-02 | viewer 只读                                    | `app/guard.tsx`、页面按角色裁剪入口                                                                 | `customers.test.tsx`（AUTH-02）                                                        |
+| AUTH-02 | viewer 只读                                    | 页面按角色裁剪入口；编辑使用列表页 Drawer                                                           | `customers.test.tsx`（AUTH-02）、`contract.test.ts`（CUS-06 403）                      |
 | AUTH-03 | 403 不打断会话                                 | `shared/api/errors.ts`、`shared/api/client.ts`                                                      | `contract.test.ts`（AUTH-03）                                                          |
 
 ## 端点覆盖

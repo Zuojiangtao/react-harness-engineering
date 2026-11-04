@@ -2,6 +2,18 @@
 
 记录真实的返工与拦截，而不是"AI 一次写完了所有代码"。每条都对应一次提交或一次门禁失败。
 
+## 2026-11-04 12:05 P0/P1 收口：生产 mode、规格对齐、客户改名与订单创建
+
+- 任务：处理评审中的 P0（生产构建默认 mock）与 P1（AUTH-02 规格漂移、客户改名读模型、删除文案、订单创建测试空白）。
+- 处理：
+  - 新增 `.env.production`，把 `VITE_API_MODE` 固定为 `http`；构建产物的 env 对象已确认是 `VITE_API_MODE: "http"`。preview 演示 mock 需显式覆盖，README/AGENTS 已写明。
+  - AUTH-02 改成与 Drawer 实现一致：不存在的"写路由"场景删除，保留"看不到入口 + 直接调用写接口 403"；同步 rules/tasks/traceability。
+  - 客户改名时同步 `db.orders[].customer.name`，客户 mutation 同时 invalidate orders；新增契约测试，改坏 handler 会红。
+  - 删除客户 409 文案改为"不能删除；可将客户状态改为归档"，同步 spec 与页面测试。
+  - `AsyncSelect` / `MoneyInput` 转发 Form.Item 注入的 `id`；新增订单创建集成测试（异步客户搜索、元→分、落库断言），这个测试暴露了上述 label 关联缺失。
+- 证据：`pnpm run verify` 26.5s / 92 tests；`test:coverage` 语句 87.41%、分支 78.29%、函数 92.96%、行 91.33%；build 产物 `VITE_API_MODE:"http"`。
+- 未完成：orders e2e 仍未补；coverage 未进 CI，这两项留在 P2。
+
 ## 2026-11-04 11:10 最后一公里：CI e2e、格式门禁与契约校验
 
 - 现象：GitHub Actions 的 `verify` 步骤通过，`test:e2e` 失败；`playwright-report/` 没有生成，失败时 artifact 为空；`pnpm format:check` 有 30 个文件不通过；`test:coverage` 的客户编辑用例在 5s 默认超时。

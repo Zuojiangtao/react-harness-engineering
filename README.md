@@ -14,6 +14,8 @@ pnpm run dev          # http://localhost:5173
 ```
 
 > Mock 模式依赖 `public/mockServiceWorker.js`（已提交）。升级 MSW 后执行 `pnpm exec msw init public` 重新生成，否则 Service Worker 会因 MIME 类型错误注册失败。
+>
+> 生产构建读取根目录的 `.env.production`（`VITE_API_MODE=http`），默认不会注册 MSW。如果要在 `build + preview` 里演示 Mock，构建时显式覆盖：`VITE_API_MODE=mock pnpm run build`（PowerShell：`$env:VITE_API_MODE='mock'; pnpm run build`）。
 
 演示账号（已预填，也可以直接点按钮）：
 
@@ -56,7 +58,7 @@ pnpm run test:e2e
 
 > `pnpm install && pnpm run dev` 即可运行应用，不需要 Playwright 或 Chromium；e2e 是额外的可选验证，CI 会自行安装浏览器并在失败时上传 HTML report。
 
-`pnpm run verify` 当前约 10–18s，90 个测试，规格 14 条全部可追溯到测试；`boundaries` 步骤会用 6 个负向用例确认违规 import 真的会被拦截。
+`pnpm run verify` 当前约 20–35s，92 个测试，规格 14 条全部可追溯到测试；`boundaries` 步骤会用 6 个负向用例确认违规 import 真的会被拦截。
 
 ## 功能
 
@@ -114,13 +116,13 @@ docs/adr       决策（为什么）
 | ------ | ------------------------------------------------------------------------------------------------------ |
 | 上下文 | [AGENTS.md](AGENTS.md)、[docs/rules.md](docs/rules.md)、[openspec/](openspec/)                         |
 | 约束   | TS strict、ESLint 边界、Prettier、env Zod 校验、提交规范                                               |
-| 反馈   | `pnpm run verify`、90 个测试、17 端点契约、`spec:validate`                                             |
+| 反馈   | `pnpm run verify`、92 个测试、17 端点契约、`spec:validate`                                             |
 | 流程   | `.claude/commands/` 四个命令；OpenSpec 的 `/opsx:*`                                                    |
 | 证据   | git 历史、[docs/iteration-log.md](docs/iteration-log.md)、[docs/traceability.md](docs/traceability.md) |
 
 ### 规格驱动
 
-三个 change 对应三个里程碑，均已完成并归档（`openspec/changes/archive/`），当前生效规格在 `openspec/specs/`：
+三个 change 对应三个里程碑，均已归档（`openspec/changes/archive/`），当前生效规格在 `openspec/specs/`。各 change 的 `tasks.md` 保留了当时的完成状态；未勾选的 e2e 项仍记录在归档里，当前 e2e 覆盖 auth、MSW worker 与客户 CRUD。
 
 - `001-customer-crud`：CUS-01…CUS-06
 - `002-order-crud`：ORD-01…ORD-05
@@ -149,6 +151,7 @@ VITE_API_MODE=http VITE_API_BASE_URL=http://localhost:8787/api pnpm run dev
 ## 已知限制
 
 - 未提供独立的 HTTP server 做"换后端"端到端演练（契约与切换机制已就绪）。
+- 生产构建默认 `http`（`.env.production`）；`pnpm run preview` 需要真实后端，或按快速开始里的命令显式以 mock 构建。
 - 订单没有独立详情页，编辑走抽屉；批量删除只有接口，UI 未接。
 - e2e 已提供 auth、MSW worker、客户 CRUD 三个 spec，需先安装浏览器；CI 会安装浏览器并运行，失败时上传 HTML report 与 trace。
 - OpenAPI 导出与独立 `db:reset` 命令未实现；契约以 Zod 和 17 个端点测试为准，mock 数据刷新页面即重置。
