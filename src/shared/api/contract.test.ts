@@ -98,6 +98,24 @@ describe('客户接口', () => {
     expect(current.updatedAt).not.toBe('2000-01-01T00:00:00.000Z')
   })
 
+  it('[CUS-03] 可以用 null 清空手机号和邮箱', async () => {
+    await loginAs('admin')
+    const current = await request('/customers/cus_001', customerSchema)
+    expect(current.phone).toBeTruthy()
+    expect(current.email).toBeTruthy()
+
+    const updated = await request('/customers/cus_001', customerSchema, {
+      method: 'PATCH',
+      body: { phone: null, email: null, updatedAt: current.updatedAt },
+    })
+    expect(updated.phone).toBeUndefined()
+    expect(updated.email).toBeUndefined()
+
+    const reread = await request('/customers/cus_001', customerSchema)
+    expect(reread.phone).toBeUndefined()
+    expect(reread.email).toBeUndefined()
+  })
+
   it('[CUS-04] 删除有订单的客户返回 409 并带订单数', async () => {
     await loginAs('admin')
     const error = await requestVoid('/customers/cus_001').catch((caught: unknown) => caught)

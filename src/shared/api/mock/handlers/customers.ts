@@ -1,4 +1,4 @@
-﻿import { http } from 'msw'
+import { http } from 'msw'
 import {
   bulkDeleteSchema,
   customerCreateSchema,
@@ -128,12 +128,17 @@ export const customerHandlers = [
       return fail(409, 'STALE_WRITE', '数据已被其他人修改，请刷新后重试')
     }
 
-    const { updatedAt: _ignored, ...changes } = parsed.data
+    const { updatedAt: _ignored, phone, email, ...changes } = parsed.data
     const next: Customer = {
       ...current,
       ...changes,
       updatedAt: new Date().toISOString(),
     }
+    // null / '' 是显式清空；undefined 表示本次 PATCH 没带这个字段。
+    if (phone === null || phone === '') delete next.phone
+    else if (phone !== undefined) next.phone = phone
+    if (email === null || email === '') delete next.email
+    else if (email !== undefined) next.email = email
     db.customers[index] = next
     return json(customerSchema.parse(next))
   }),

@@ -2,7 +2,8 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { resetDb } from '@/shared/api/mock/db'
-import { setToken } from '@/shared/api/client'
+import { request, setToken } from '@/shared/api/client'
+import { customerSchema } from '@/shared/api/schema'
 import { server } from '@/test/msw/server'
 import { renderWithProviders } from '@/test/utils'
 import CustomersPage from './index'
@@ -22,6 +23,23 @@ describe('客户列表页', () => {
 
     expect(await screen.findByText('原点设计')).toBeInTheDocument()
     expect(screen.getByText('共 24 条')).toBeInTheDocument()
+  })
+
+  it('编辑时清空手机号和邮箱会保存为空', async () => {
+    renderWithProviders(<CustomersPage />, { route: '/customers' })
+    const nameCell = await screen.findByText('原点设计')
+    const row = nameCell.closest('tr')
+    expect(row).not.toBeNull()
+
+    await userEvent.click(within(row as HTMLElement).getByRole('button', { name: /编\s*辑/ }))
+    await userEvent.clear(await screen.findByLabelText(/手机号/))
+    await userEvent.clear(screen.getByLabelText(/邮箱/))
+    await userEvent.click(screen.getByRole('button', { name: /保\s*存/ }))
+
+    expect(await screen.findByText('已保存')).toBeInTheDocument()
+    const saved = await request('/customers/cus_024', customerSchema)
+    expect(saved.phone).toBeUndefined()
+    expect(saved.email).toBeUndefined()
   })
 
   it('关键词搜索走接口并收敛结果', async () => {

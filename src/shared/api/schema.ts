@@ -76,7 +76,13 @@ export const customerCreateSchema = customerSchema
 
 export type CustomerCreate = z.infer<typeof customerCreateSchema>
 
+/**
+ * PATCH 里 undefined = 未提供（保持原值），null / '' = 显式清空。
+ * 不能复用 create 的 emptyToUndefined，否则清空会被 JSON 序列化吃掉。
+ */
 export const customerUpdateSchema = customerCreateSchema.partial().extend({
+  phone: z.union([phoneSchema, z.literal(''), z.null()]).optional(),
+  email: z.union([emailSchema, z.literal(''), z.null()]).optional(),
   updatedAt: isoDateTime,
 })
 

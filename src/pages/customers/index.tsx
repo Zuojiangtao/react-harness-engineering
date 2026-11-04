@@ -95,7 +95,13 @@ export default function CustomersPage() {
     if (drawer?.mode === 'edit') {
       await update.mutateAsync({
         id: drawer.customer.id,
-        input: { ...values, updatedAt: drawer.customer.updatedAt },
+        input: {
+          ...values,
+          // 表单清空后 schema 得到 undefined；PATCH 用 null 表达“清空”。
+          phone: values.phone ?? null,
+          email: values.email ?? null,
+          updatedAt: drawer.customer.updatedAt,
+        },
       })
       message.success('已保存')
     } else {
