@@ -18,6 +18,7 @@ function localBin(name) {
 
 /** @type {[string, string[]][]} */
 const steps = [
+  ['format', ['prettier', '--check', '.']],
   ['lint', ['eslint', '.', '--max-warnings=0']],
   ['boundaries', ['node', 'scripts/check-boundaries.mjs']],
   ['typecheck', ['tsc', '--noEmit', '-p', 'tsconfig.app.json']],

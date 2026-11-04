@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ApiError } from '@/shared/api/errors'
 import { DataTable } from './DataTable'
@@ -14,7 +14,13 @@ const pagination = { page: 1, pageSize: 10, total: 1, onChange: () => {} }
 describe('DataTable', () => {
   it('ready 时渲染数据行', () => {
     renderWithProviders(
-      <DataTable columns={columns} rows={rows} rowKey="id" status="ready" pagination={pagination} />,
+      <DataTable
+        columns={columns}
+        rows={rows}
+        rowKey="id"
+        status="ready"
+        pagination={pagination}
+      />,
     )
     expect(screen.getByText('远山科技')).toBeInTheDocument()
   })
@@ -46,6 +52,31 @@ describe('DataTable', () => {
     )
     expect(screen.getByText('暂无客户')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '新建客户' })).toBeInTheDocument()
+  })
+
+  it('分页与排序变化归一化后回调', async () => {
+    const onChange = vi.fn()
+    const onSortChange = vi.fn()
+    renderWithProviders(
+      <DataTable
+        columns={[{ title: '名称', dataIndex: 'name', sorter: true }]}
+        rows={[
+          { id: '1', name: 'A' },
+          { id: '2', name: 'B' },
+        ]}
+        rowKey="id"
+        status="ready"
+        pagination={{ page: 1, pageSize: 1, total: 2, onChange }}
+        sort={null}
+        onSortChange={onSortChange}
+      />,
+    )
+
+    fireEvent.click(screen.getByText('名称'))
+    await waitFor(() => expect(onSortChange).toHaveBeenCalledWith({ field: 'name', order: 'asc' }))
+
+    fireEvent.click(screen.getByTitle('2'))
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith(2, 1))
   })
 
   it('error 时展示错误与重试', async () => {

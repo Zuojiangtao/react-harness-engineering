@@ -1,2 +1,6 @@
 pnpm-lock.yaml
 public/mockServiceWorker.js
+dist/
+coverage/
+playwright-report/
+test-results/

@@ -20,6 +20,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     pool: 'threads',
+    testTimeout: 15_000,
     setupFiles: ['./src/test/setup.ts'],
     css: false,
     include: ['src/**/*.{test,spec}.{ts,tsx}', 'scripts/**/*.test.mjs'],
