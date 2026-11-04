@@ -74,13 +74,15 @@ git log --oneline           # 5) 迭代粒度是否可信
 | 命令 | 作用 | 何时跑 |
 |---|---|---|
 | pnpm dev | 启动（默认 mock 模式） | 开发 |
-| pnpm dev:http | 指向本地真后端 :8787 | 换后端演练 |
-| pnpm verify | lint + typecheck + test + contract + build | **每次提交前必跑** |
+| pnpm dev:http | （规划）指向本地真后端 :8787 | 换后端演练 |
+| pnpm verify | lint + boundaries + typecheck + test + spec + build | **每次提交前必跑** |
 | pnpm test / test:watch | 单元与集成测试 | 改逻辑时 |
 | pnpm test:e2e | Playwright | 改交互后 |
-| pnpm contract:openapi | 由 zod 导出 OpenAPI | 改契约后 |
+| pnpm contract:openapi | （规划）由 zod 导出 OpenAPI | 改契约后 |
 | pnpm spec:validate | 校验 openspec 规格与需求 ID 追溯 | 改需求后 |
-| pnpm db:reset | 重置 mock 种子 | 演示前 |
+| pnpm db:reset | （规划）重置 mock 种子；当前刷新页面即可 | 演示前 |
+
+> 标（规划）的命令当前未在 `package.json` 实现；实际命令以 [AGENTS.md](../../AGENTS.md) 为准。
 
 ## 3. 目录与依赖方向
 src/app → src/pages → src/features/* → src/shared

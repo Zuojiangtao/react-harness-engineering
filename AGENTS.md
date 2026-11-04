@@ -17,12 +17,12 @@
 | 命令 | 作用 | 何时跑 |
 |---|---|---|
 | `pnpm run dev` | 启动（默认 mock 模式） | 开发 |
-| `pnpm run verify` | lint + typecheck + test + spec + contract + build | **每次提交前必跑** |
+| `pnpm run verify` | lint + boundaries + typecheck + test + spec + build | **每次提交前必跑** |
 | `pnpm run test` / `pnpm run test:watch` | 单元与集成测试 | 改逻辑时 |
 | `pnpm run test:e2e` | Playwright | 改交互后 |
 | `pnpm run spec:validate` | `openspec validate --strict` + 需求 ID 追溯 | 改需求后 |
-| `pnpm run contract:openapi` | 由 Zod 导出 OpenAPI 到 `contract/` | 改契约后 |
-| `pnpm run db:reset` | 重置 mock 种子 | 演示前 |
+
+> OpenAPI 导出与独立 `db:reset` 命令当前未实现：契约以 Zod + 契约测试为准，mock 数据刷新页面即重置。不要把它们写进提交说明或 README 的“已实现”清单。
 
 > 包管理器固定为 pnpm 12（`package.json` 的 `packageManager`），锁文件是 `pnpm-lock.yaml`。不要混用 npm，也不要提交 `package-lock.json`；`nodeLinker: hoisted` 的原因见 [ADR 0004](./docs/adr/0004-pnpm.md)。
 
@@ -86,7 +86,7 @@ docs/adr       决策（为什么）
 
 ## 7. 改契约的顺序
 
-schema → 失败测试 → handler → 前端类型 → `pnpm run contract:openapi` → `pnpm run verify`。
+schema → 失败测试 → handler → 前端类型 → `pnpm run verify`。
 顺序反了会出现"类型对但运行时 500"。
 
 ## 8. Definition of Done（提交前逐条打勾）
@@ -99,7 +99,7 @@ schema → 失败测试 → handler → 前端类型 → `pnpm run contract:open
 - [ ] 无新增 `any` / `ts-ignore` / `eslint-disable`
 - [ ] 无跨 feature import（lint 已保证）
 - [ ] 键盘可完成主要操作，焦点可见
-- [ ] 改了契约：openapi 已重新导出
+- [ ] 改了契约：端点契约测试已覆盖新增/变更的请求与响应
 - [ ] 改了需求：openspec tasks 已勾选、spec delta 已更新
 - [ ] 提交信息符合规范，diff 内无无关改动
 

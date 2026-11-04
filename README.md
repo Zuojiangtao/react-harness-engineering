@@ -38,7 +38,7 @@ pnpm exec playwright install chromium
 pnpm run test:e2e
 ```
 
-`pnpm run verify` 当前约 10–18s，53 个测试，规格 11 条全部可追溯到测试。
+`pnpm run verify` 当前约 10–18s，84 个测试，规格 14 条全部可追溯到测试；`boundaries` 步骤会用 6 个负向用例确认违规 import 真的会被拦截。
 
 ## 功能
 
@@ -96,7 +96,7 @@ docs/adr       决策（为什么）
 |---|---|
 | 上下文 | [AGENTS.md](AGENTS.md)、[docs/rules.md](docs/rules.md)、[openspec/](openspec/) |
 | 约束 | TS strict、ESLint 边界、Prettier、env Zod 校验、提交规范 |
-| 反馈 | `pnpm run verify`、52 个测试、契约测试、`spec:validate` |
+| 反馈 | `pnpm run verify`、84 个测试、17 端点契约、`spec:validate` |
 | 流程 | `.claude/commands/` 四个命令；OpenSpec 的 `/opsx:*` |
 | 证据 | git 历史、[docs/iteration-log.md](docs/iteration-log.md)、[docs/traceability.md](docs/traceability.md) |
 
@@ -132,7 +132,8 @@ VITE_API_MODE=http VITE_API_BASE_URL=http://localhost:8787/api pnpm run dev
 
 - 未提供独立的 HTTP server 做"换后端"端到端演练（契约与切换机制已就绪）。
 - 订单没有独立详情页，编辑走抽屉；批量删除只有接口，UI 未接。
-- e2e 已提供两条冒烟用例（`e2e/auth.spec.ts`），需先安装浏览器；本机沙箱无法启动浏览器进程，未在本地执行，CI 中会跑。
+- e2e 已提供 auth、MSW worker、客户 CRUD 三个 spec，需先安装浏览器；本机沙箱未在本地执行，CI 中会跑。
+- OpenAPI 导出与独立 `db:reset` 命令未实现；契约以 Zod 和 17 个端点测试为准，mock 数据刷新页面即重置。
 - 列表未虚拟化（数据量 ≤ 60 条），这是有意的取舍。
 
 ## 我如何使用 AI
