@@ -22,7 +22,7 @@ export default defineConfig({
     pool: 'threads',
     setupFiles: ['./src/test/setup.ts'],
     css: false,
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}', 'scripts/**/*.test.mjs'],
     coverage: {
       provider: 'v8',
       include: ['src/shared/**', 'src/features/**/schema.ts'],

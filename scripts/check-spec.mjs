@@ -10,6 +10,7 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { extractRequirementIds } from './spec-ids.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const isWindows = process.platform === 'win32'
@@ -48,8 +49,8 @@ const specFiles = [
 
 const ids = new Set()
 for (const file of specFiles) {
-  for (const match of readFileSync(file, 'utf8').matchAll(/\[([A-Z]{3}-\d{2})\]/g)) {
-    ids.add(match[1])
+  for (const id of extractRequirementIds(readFileSync(file, 'utf8'))) {
+    ids.add(id)
   }
 }
 
