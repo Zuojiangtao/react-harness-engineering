@@ -107,7 +107,7 @@ schema → 失败测试 → handler → 前端类型 → `pnpm run verify`。
 
 - **AntD 6**：Modal/Drawer 的关闭销毁属性、`Form.validateFields` 的 reject 结构、主题 CSS 变量模式与 5.x 有差异，动组件前先查 6.x 文档；结论记在 `docs/adr/0002-antd-version.md`。
 - **AntD 静态方法**：`message` / `modal` / `notification` 必须通过 `App.useApp()` 获取，直接 import 会丢主题与 locale。
-- **MSW**：`pnpm run build && pnpm run preview` 默认不启用 mock；e2e 用 `pnpm run dev` 或显式 `VITE_API_MODE=mock`。
+- **MSW**：`.env.production` 把 `VITE_API_MODE` 固定为 `http`，所以 `pnpm run build && pnpm run preview` 默认不启用 mock；要在 preview 里演示 mock，构建时显式覆盖 `VITE_API_MODE=mock`。e2e 用 `pnpm run dev`。
 - **MSW 3**：`setupWorker` / `setupServer` 的 API 与 2.x 基本一致，但 `http` 命名空间从 `msw` 导入。
 - **MSW worker**：`public/mockServiceWorker.js` 必须提交，否则 Vite 的 SPA fallback 会把 `index.html` 当脚本返回，浏览器报 `unsupported MIME type ('text/html')` 且 worker 注册失败。升级 msw 后跑 `pnpm exec msw init public`（路径已记录在 `package.json` 的 `msw.workerDirectory`）。
 - **React Router 7**：`useSearchParams` 的参数是字符串，分页参数必须 `Number()` 后再进 schema。
