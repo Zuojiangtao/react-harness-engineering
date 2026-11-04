@@ -83,7 +83,10 @@ export const ordersSeed: Order[] = Array.from({ length: 60 }, (_, index) => {
   const createdAtDate = new Date(BASE + (index + 1) * DAY * 2)
   const createdAt = createdAtDate.toISOString()
   const status = ORDER_STATUSES[index % ORDER_STATUSES.length]
-  const paidAt = status === 'paid' || status === 'refunded' ? iso(index * 60 + 30) : null
+  const paidAt =
+    status === 'paid' || status === 'refunded'
+      ? new Date(createdAtDate.getTime() + 2 * 60 * MINUTE).toISOString()
+      : null
 
   return {
     id: `ord_${pad(index + 1, 3)}`,
