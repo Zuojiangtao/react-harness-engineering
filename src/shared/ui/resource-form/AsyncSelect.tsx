@@ -5,6 +5,7 @@ import { useDebouncedValue } from '@/shared/lib/use-debounced-value'
 import type { Option } from './types'
 
 export function AsyncSelect({
+  id,
   value,
   onChange,
   load,
@@ -12,6 +13,7 @@ export function AsyncSelect({
   placeholder,
   minChars = 1,
 }: {
+  id?: string
   value?: string
   onChange?: (value: string | undefined) => void
   load: (keyword: string) => Promise<Option[]>
@@ -32,6 +34,7 @@ export function AsyncSelect({
 
   return (
     <Select
+      id={id}
       showSearch
       allowClear
       value={value}

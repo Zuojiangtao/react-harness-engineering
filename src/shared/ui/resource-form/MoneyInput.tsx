@@ -5,16 +5,19 @@ import { InputNumber } from 'antd'
  * Form.Item 会注入 value/onChange，所以这里只做单位换算。
  */
 export function MoneyInput({
+  id,
   value,
   onChange,
   placeholder,
 }: {
+  id?: string
   value?: number
   onChange?: (value: number | undefined) => void
   placeholder?: string
 }) {
   return (
     <InputNumber
+      id={id}
       style={{ width: '100%' }}
       min={0}
       precision={2}
