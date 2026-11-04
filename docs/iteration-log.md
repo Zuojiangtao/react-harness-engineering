@@ -2,6 +2,16 @@
 
 记录真实的返工与拦截，而不是"AI 一次写完了所有代码"。每条都对应一次提交或一次门禁失败。
 
+## 2026-11-03 22:25 依赖管理从 npm 切到 pnpm
+
+- 任务：把依赖管理统一到 pnpm（本机已装 12.16.1），同时保证沙箱里还能跑 `pnpm run verify`。
+- 现象 1：`pnpm install` 直接报 `ERR_PNPM_OTHER_PM_EXPECTED`——`packageManager` 还钉着 `npm@10.9.8`。
+- 现象 2：默认 isolated 布局下，`node_modules/is-odd` 是 junction；Node 能读到入口，但 `realpath` 拿不到真实目录，嵌套依赖报 `Cannot find module 'is-number'`。pnpm 11 与 12 都能复现。
+- 现象 3：pnpm 12 的 store 操作锁写在 `%LOCALAPPDATA%`，本机沙箱拒绝写入；本地安装时把 `USERPROFILE` / `LOCALAPPDATA` / `APPDATA` 指到工作区内的临时目录才通过（环境规避，不写进仓库）。
+- 处理：`packageManager` 改 `pnpm@12.16.1`；新增 `pnpm-workspace.yaml`，`nodeLinker: hoisted`；`pnpm import` 从 `package-lock.json` 继承精确版本生成 `pnpm-lock.yaml`，再删除 npm 锁；CI、Playwright、README、AGENTS 统一改成 pnpm。
+- 证据：`pnpm import` 1m57s；`pnpm install` 3m09s（411 个包）；`pnpm run verify` 10.7–17.7s，53 个测试全绿。
+- 结论：**hoisted 是为了沙箱可执行性**，不是 pnpm 的默认值；代价是失去严格 `node_modules`，幽灵依赖靠 ESLint boundaries 兜底。决策见 [ADR 0004](adr/0004-pnpm.md)。
+
 ## 2026-11-03 21:00 TypeScript 7 与 typescript-eslint 不兼容
 
 - 任务：搭工程底座，`npm install` 拿到 TypeScript 7.0.2。
@@ -48,5 +58,5 @@
 
 ## 环境备注（不进入代码）
 
-- 本机 pnpm 创建的 junction 在沙箱里无法被 Node 解析，改用 npm；`package-lock.json` 已提交。
-- 本机 Vite 的 Windows 网络盘探测会触发沙箱限制，开发时用了一个不提交的本地 shim；正常机器直接 `npm run dev` 即可。
+- 本机 pnpm 创建的 junction 在沙箱里无法被 Node 解析；2026-11-03 22:25 已用 `nodeLinker: hoisted` 切回 pnpm，见上。早期因此改用 npm 并提交了 `package-lock.json`。
+- 本机 Vite 的 Windows 网络盘探测会触发沙箱限制，开发时用了一个不提交的本地 shim；正常机器直接 `pnpm run dev` 即可。

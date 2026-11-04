@@ -11,7 +11,7 @@
 
 ## 1. 两个工具是什么（2026-11 现状）
 
-**OpenSpec**——自称"轻量、可配置的规格框架"，安装 `npm i -g @fission-ai/openspec`。工作流是 `/opsx:explore → /opsx:propose → /opsx:apply → /opsx:verify → /opsx:archive`，产物为 `proposal.md`、`specs/`、`design.md`、`tasks.md`，支持 Claude Code、Codex、Cursor 等三十多种工具（[openspec.dev](https://openspec.dev/)）。它的核心是**变更制**：每次改动是一个 change，自带 delta 规格，完成后 archive，历史可追溯。
+**OpenSpec**——自称"轻量、可配置的规格框架"，安装 `pnpm add -g @fission-ai/openspec`。工作流是 `/opsx:explore → /opsx:propose → /opsx:apply → /opsx:verify → /opsx:archive`，产物为 `proposal.md`、`specs/`、`design.md`、`tasks.md`，支持 Claude Code、Codex、Cursor 等三十多种工具（[openspec.dev](https://openspec.dev/)）。它的核心是**变更制**：每次改动是一个 change，自带 delta 规格，完成后 archive，历史可追溯。
 
 **GitHub Spec Kit**——更重的 SDD 工具链，`specify init <project> --integration <agent>`，核心流程 **Specify → Plan → Tasks → Implement → Converge**，带 constitution（项目宪法）、模板、质量清单与跨产物一致性分析，官方称支持 38 种 agent 集成，还有 bugfix、idea assessment 等可选扩展（[Spec Kit 文档](https://github.github.io/spec-kit/)）。
 

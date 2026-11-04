@@ -1,0 +1,3 @@
+# pnpm 10+ 的非 npm 配置只认这个文件（.npmrc 里的 node-linker 已不再生效）。
+# hoisted：本机的文件沙箱无法 realpath 目录 junction，isolated 布局下嵌套依赖会解析失败。
+nodeLinker: hoisted

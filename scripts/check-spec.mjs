@@ -17,7 +17,7 @@ const strict = process.argv.includes('--strict')
 const bin = join(root, 'node_modules', '.bin', isWindows ? 'openspec.cmd' : 'openspec')
 
 if (!existsSync(bin)) {
-  console.error('openspec CLI 未安装，先运行 npm install')
+  console.error('openspec CLI 未安装，先运行 pnpm install')
   process.exit(1)
 }
 

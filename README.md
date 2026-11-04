@@ -1,15 +1,19 @@
 # CRM · React + AntD + OpenSpec
 
-一个面向面试的 SaaS 后台：客户与订单两个业务模块，完整的增删改查、状态机、权限与 Mock 后端，以及一套可执行的 harness。
+一个 SaaS 后台：客户与订单两个业务模块，完整的增删改查、状态机、权限与 Mock 后端，以及一套可执行的 harness。
 
 技术栈：React 19 · Ant Design 6 · TypeScript 6 · Vite 8 · TanStack Query 5 · Zod 4 · MSW 3 · Vitest 5。
+
+包管理器：pnpm 12（版本由 `package.json` 的 `packageManager` 固定，锁文件为 `pnpm-lock.yaml`）。`pnpm-workspace.yaml` 里固定 `nodeLinker: hoisted`，原因见 [ADR 0004](docs/adr/0004-pnpm.md)。
 
 ## 快速开始
 
 ```bash
-npm install
-npm run dev          # http://localhost:5173
+pnpm install
+pnpm run dev          # http://localhost:5173
 ```
+
+> Mock 模式依赖 `public/mockServiceWorker.js`（已提交）。升级 MSW 后执行 `pnpm exec msw init public` 重新生成，否则 Service Worker 会因 MIME 类型错误注册失败。
 
 演示账号（已预填，也可以直接点按钮）：
 
@@ -23,18 +27,18 @@ Mock 数据：24 个客户、60 个订单；后 4 个客户没有订单，方便
 ## 命令
 
 ```bash
-npm run dev            # 开发（默认 mock 模式）
-npm run verify         # lint + typecheck + test + spec + build，快速失败
-npm run test           # Vitest（schema / 契约 / 组件 / 页面）
-npm run spec:validate  # openspec validate --strict + 需求 ID 追溯
-npm run build          # 生产构建
+pnpm run dev            # 开发（默认 mock 模式）
+pnpm run verify         # lint + typecheck + test + spec + build，快速失败
+pnpm run test           # Vitest（schema / 契约 / 组件 / 页面）
+pnpm run spec:validate  # openspec validate --strict + 需求 ID 追溯
+pnpm run build          # 生产构建
 
 # e2e（首次需要安装浏览器）
-npx playwright install chromium
-npm run test:e2e
+pnpm exec playwright install chromium
+pnpm run test:e2e
 ```
 
-`npm run verify` 当前约 10–18s，53 个测试，规格 11 条全部可追溯到测试。
+`pnpm run verify` 当前约 10–18s，53 个测试，规格 11 条全部可追溯到测试。
 
 ## 功能
 
@@ -92,7 +96,7 @@ docs/adr       决策（为什么）
 |---|---|
 | 上下文 | [AGENTS.md](AGENTS.md)、[docs/rules.md](docs/rules.md)、[openspec/](openspec/) |
 | 约束 | TS strict、ESLint 边界、Prettier、env Zod 校验、提交规范 |
-| 反馈 | `npm run verify`、52 个测试、契约测试、`spec:validate` |
+| 反馈 | `pnpm run verify`、52 个测试、契约测试、`spec:validate` |
 | 流程 | `.claude/commands/` 四个命令；OpenSpec 的 `/opsx:*` |
 | 证据 | git 历史、[docs/iteration-log.md](docs/iteration-log.md)、[docs/traceability.md](docs/traceability.md) |
 
@@ -104,7 +108,7 @@ docs/adr       决策（为什么）
 - `002-order-crud`：ORD-01…ORD-05
 - `003-rbac-readonly`：AUTH-01…AUTH-03
 
-每条需求有稳定 ID，`scripts/check-spec.mjs` 会校验 OpenSpec 结构，并断言每个 ID 至少被一个测试引用。`npm run verify` 里这一步是硬的。
+每条需求有稳定 ID，`scripts/check-spec.mjs` 会校验 OpenSpec 结构，并断言每个 ID 至少被一个测试引用。`pnpm run verify` 里这一步是硬的。
 
 ### 契约与 Mock
 
@@ -114,7 +118,7 @@ docs/adr       决策（为什么）
 - handler 内对入参和出参都做 Zod 校验，避免"mock 自己违反契约"。
 
 ```bash
-VITE_API_MODE=http VITE_API_BASE_URL=http://localhost:8787/api npm run dev
+VITE_API_MODE=http VITE_API_BASE_URL=http://localhost:8787/api pnpm run dev
 ```
 
 ## 关键决策
@@ -122,6 +126,7 @@ VITE_API_MODE=http VITE_API_BASE_URL=http://localhost:8787/api npm run dev
 - [ADR 0001 技术选型](docs/adr/0001-tech-stack.md)
 - [ADR 0002 AntD 6 与工具链版本](docs/adr/0002-antd-version.md)
 - [ADR 0003 复用边界](docs/adr/0003-reuse-boundary.md)
+- [ADR 0004 依赖管理器切换到 pnpm](docs/adr/0004-pnpm.md)
 
 ## 已知限制
 
@@ -132,4 +137,4 @@ VITE_API_MODE=http VITE_API_BASE_URL=http://localhost:8787/api npm run dev
 
 ## 我如何使用 AI
 
-见 [docs/iteration-log.md](docs/iteration-log.md)：记录了哪些是 AI 一次写对的、哪些被测试或 lint 拦下、怎么修的。所有提交前的状态都跑过 `npm run verify`。
+见 [docs/iteration-log.md](docs/iteration-log.md)：记录了哪些是 AI 一次写对的、哪些被测试或 lint 拦下、怎么修的。所有提交前的状态都跑过 `pnpm run verify`。

@@ -50,6 +50,6 @@
 
 ## 8. 提交
 
-- Conventional Commits；一个提交一个切片；每次提交前 `npm run verify`。
+- Conventional Commits；一个提交一个切片；每次提交前 `pnpm run verify`。
 - 重构与功能分开；契约变更单独成提交。
 - 提交说明写"为什么"，不只写"改了什么"。

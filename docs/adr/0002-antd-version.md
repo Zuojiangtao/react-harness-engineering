@@ -5,7 +5,7 @@
 
 ## 背景
 
-团队现有 Vue 管理端使用 ant-design-vue 4.2（对应 React 侧 v5 世代）。本次面试允许使用 AntD，npm 最新为 6.6.8，React 最新 19.3.1。
+团队使用 AntD，npm 最新为 6.6.8，React 最新 19.3.1。
 
 ## 决策
 

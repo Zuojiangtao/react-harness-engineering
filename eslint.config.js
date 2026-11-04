@@ -15,6 +15,8 @@ export default tseslint.config(
       'test-results/**',
       'contract/**',
       'openspec/**',
+      // MSW 生成的 worker，不手工修改
+      'public/mockServiceWorker.js',
     ],
   },
   ...tseslint.configs.recommended,

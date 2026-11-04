@@ -16,13 +16,15 @@
 
 | 命令 | 作用 | 何时跑 |
 |---|---|---|
-| `npm run dev` | 启动（默认 mock 模式） | 开发 |
-| `npm run verify` | lint + typecheck + test + spec + contract + build | **每次提交前必跑** |
-| `npm run test` / `npm run test:watch` | 单元与集成测试 | 改逻辑时 |
-| `npm run test:e2e` | Playwright | 改交互后 |
-| `npm run spec:validate` | `openspec validate --strict` + 需求 ID 追溯 | 改需求后 |
-| `npm run contract:openapi` | 由 Zod 导出 OpenAPI 到 `contract/` | 改契约后 |
-| `npm run db:reset` | 重置 mock 种子 | 演示前 |
+| `pnpm run dev` | 启动（默认 mock 模式） | 开发 |
+| `pnpm run verify` | lint + typecheck + test + spec + contract + build | **每次提交前必跑** |
+| `pnpm run test` / `pnpm run test:watch` | 单元与集成测试 | 改逻辑时 |
+| `pnpm run test:e2e` | Playwright | 改交互后 |
+| `pnpm run spec:validate` | `openspec validate --strict` + 需求 ID 追溯 | 改需求后 |
+| `pnpm run contract:openapi` | 由 Zod 导出 OpenAPI 到 `contract/` | 改契约后 |
+| `pnpm run db:reset` | 重置 mock 种子 | 演示前 |
+
+> 包管理器固定为 pnpm 12（`package.json` 的 `packageManager`），锁文件是 `pnpm-lock.yaml`。不要混用 npm，也不要提交 `package-lock.json`；`nodeLinker: hoisted` 的原因见 [ADR 0004](./docs/adr/0004-pnpm.md)。
 
 > TypeScript 固定在 6.x：typescript-eslint 尚不支持 TS 7。升级前先确认 lint 能过。
 
@@ -80,16 +82,16 @@ docs/adr       决策（为什么）
 4. 在 `src/features/<module>/` 建 `api.ts`、`columns.tsx`、`form.tsx`、`hooks.ts`。
 5. 在 `src/pages/<module>/` 建 list 页，接 `useResourceList` + `DataTable` + `ResourceForm`。
 6. 加路由与侧边栏入口（含角色判断）。
-7. 补三类测试：schema 单测、列表集成测试、e2e happy path；跑 `npm run verify`。
+7. 补三类测试：schema 单测、列表集成测试、e2e happy path；跑 `pnpm run verify`。
 
 ## 7. 改契约的顺序
 
-schema → 失败测试 → handler → 前端类型 → `npm run contract:openapi` → `npm run verify`。
+schema → 失败测试 → handler → 前端类型 → `pnpm run contract:openapi` → `pnpm run verify`。
 顺序反了会出现"类型对但运行时 500"。
 
 ## 8. Definition of Done（提交前逐条打勾）
 
-- [ ] `npm run verify` 全绿
+- [ ] `pnpm run verify` 全绿
 - [ ] 新逻辑有测试，且手动改坏实现时测试会红
 - [ ] 三态齐全，错误文案对用户可读
 - [ ] URL 状态可还原，刷新不丢筛选
@@ -105,11 +107,14 @@ schema → 失败测试 → handler → 前端类型 → `npm run contract:opena
 
 - **AntD 6**：Modal/Drawer 的关闭销毁属性、`Form.validateFields` 的 reject 结构、主题 CSS 变量模式与 5.x 有差异，动组件前先查 6.x 文档；结论记在 `docs/adr/0002-antd-version.md`。
 - **AntD 静态方法**：`message` / `modal` / `notification` 必须通过 `App.useApp()` 获取，直接 import 会丢主题与 locale。
-- **MSW**：`npm run build && npm run preview` 默认不启用 mock；e2e 用 `npm run dev` 或显式 `VITE_API_MODE=mock`。
+- **MSW**：`pnpm run build && pnpm run preview` 默认不启用 mock；e2e 用 `pnpm run dev` 或显式 `VITE_API_MODE=mock`。
 - **MSW 3**：`setupWorker` / `setupServer` 的 API 与 2.x 基本一致，但 `http` 命名空间从 `msw` 导入。
+- **MSW worker**：`public/mockServiceWorker.js` 必须提交，否则 Vite 的 SPA fallback 会把 `index.html` 当脚本返回，浏览器报 `unsupported MIME type ('text/html')` 且 worker 注册失败。升级 msw 后跑 `pnpm exec msw init public`（路径已记录在 `package.json` 的 `msw.workerDirectory`）。
 - **React Router 7**：`useSearchParams` 的参数是字符串，分页参数必须 `Number()` 后再进 schema。
 - **TanStack Query v5**：`onSuccess` 已从 useQuery 移除，提示逻辑放 mutation。
 - **Windows**：脚本用 node 实现，不依赖 shell 语法；路径统一 `node:path`。
+- **pnpm**：`nodeLinker` 必须是 `hoisted`（见 `pnpm-workspace.yaml`）。本机文件沙箱无法 realpath 目录 junction，isolated 布局下 `is-odd → is-number` 这类嵌套依赖会 `Cannot find module`；改回 isolated 前先在沙箱里跑一次 `pnpm run verify`。
+- **pnpm-lock.yaml**：pnpm 12 的锁文件可能是**双文档**（boot document + project lockfile），用 `---` 分隔，不是损坏。不要手工删前半段；读依赖图的工具要取最后一个 YAML 文档。
 - **金额**：输入框按"元"、存储按"分"，转换只在 `features/**/form.ts` 与 `MoneyText` 两处。
 
 ## 10. 不确定时
