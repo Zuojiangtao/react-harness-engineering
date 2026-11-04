@@ -1,8 +1,27 @@
 import type { z } from 'zod'
 import { env } from '@/shared/config/env'
-import { toApiError } from './errors'
+import { toApiError, type ApiError } from './errors'
 
 const TOKEN_KEY = 'crm.token'
+
+type UnauthorizedHandler = (error: ApiError) => void
+
+let unauthorizedHandler: UnauthorizedHandler | null = null
+
+/**
+ * 由 app 层注入“会话失效”处理（清 token、清缓存、跳登录并保留 redirect）。
+ * client 属于 shared，不能反向依赖 router / app。
+ */
+export function setUnauthorizedHandler(handler: UnauthorizedHandler | null): void {
+  unauthorizedHandler = handler
+}
+
+function throwResponseError(status: number, body: unknown, path: string): never {
+  const error = toApiError(status, body)
+  // 登录接口的 401 是“账号密码错误”，不是会话失效。
+  if (status === 401 && path !== '/auth/login') unauthorizedHandler?.(error)
+  throw error
+}
 
 export function getToken(): string | null {
   try {
@@ -74,7 +93,7 @@ export async function request<T>(
   })
 
   if (!response.ok) {
-    throw toApiError(response.status, await parseBody(response))
+    throwResponseError(response.status, await parseBody(response), path)
   }
 
   if (response.status === 204) {
@@ -97,6 +116,6 @@ export async function requestVoid(path: string, options: RequestOptions = {}): P
     body: body === undefined ? undefined : JSON.stringify(body),
   })
   if (!response.ok) {
-    throw toApiError(response.status, await parseBody(response))
+    throwResponseError(response.status, await parseBody(response), path)
   }
 }
