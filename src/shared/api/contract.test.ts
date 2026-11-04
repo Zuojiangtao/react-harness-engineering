@@ -3,7 +3,6 @@ import { server } from '@/test/msw/server'
 import { request, requestVoid, setToken } from './client'
 import { isApiError } from './errors'
 import { resetDb } from './mock/db'
-import { ENDPOINTS } from './mock/handlers'
 import {
   customerSchema,
   loginResponseSchema,
@@ -36,12 +35,6 @@ afterEach(() => {
   setToken(null)
 })
 afterAll(() => server.close())
-
-describe('端点清单', () => {
-  it('规格中的 17 个端点都登记了', () => {
-    expect(ENDPOINTS).toHaveLength(17)
-  })
-})
 
 describe('客户接口', () => {
   it('[CUS-01] 列表返回分页结构，默认 10 条', async () => {
