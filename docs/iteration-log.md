@@ -2,6 +2,13 @@
 
 记录真实的返工与拦截，而不是"AI 一次写完了所有代码"。每条都对应一次提交或一次门禁失败。
 
+## 2026-11-04 12:35 CI e2e 的真实失败：`客户名称` 同时命中表头和表单
+
+- 现象：三次 push 都是 `verify` 绿、`test:e2e` 红（8–10s）；`auth` / `msw` 两条通过，只有 `customers` 失败。
+- 根因：从 CI 的 `playwright-report` artifact 里拿到 `error-context.md`——`getByLabel('客户名称')` 严格模式匹配到 2 个元素：可排序表头的 `<th aria-label="客户名称">` 和 Drawer 里的 `<input>`。Drawer 不会把背景表格移出可访问树，所以字段定位必须限定在 dialog 内。另外 AntD 给两个汉字的按钮自动加空格，可访问名是“创 建”，`name: '创建'` 也匹配不到。
+- 处理：`e2e/customers.spec.ts` 的创建/编辑字段与提交按钮全部限定到 `getByRole('dialog', { name })`；提交按钮改 `/创\s*建/`。
+- 证据：`pnpm run verify` 13.7s / 92 tests；e2e 需 push 后由 CI 复验（本机沙箱起不了 Playwright worker：spawn EPERM）。
+
 ## 2026-11-04 12:05 P0/P1 收口：生产 mode、规格对齐、客户改名与订单创建
 
 - 任务：处理评审中的 P0（生产构建默认 mock）与 P1（AUTH-02 规格漂移、客户改名读模型、删除文案、订单创建测试空白）。
