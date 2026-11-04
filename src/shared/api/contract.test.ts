@@ -143,6 +143,21 @@ describe('客户接口', () => {
     expect(reread.email).toBeUndefined()
   })
 
+  it('[ORD-01] 客户改名后订单里的客户名同步更新', async () => {
+    await loginAs('admin')
+    const current = await request('/customers/cus_001', customerSchema)
+    const renamed = '远山科技（已改名）'
+
+    await request('/customers/cus_001', customerSchema, {
+      method: 'PATCH',
+      body: { name: renamed, updatedAt: current.updatedAt },
+    })
+
+    const page = await request('/orders', orderPage, { query: { customerId: 'cus_001' } })
+    expect(page.items.length).toBeGreaterThan(0)
+    expect(page.items.every((order) => order.customer.name === renamed)).toBe(true)
+  })
+
   it('[CUS-04] 删除有订单的客户返回 409 并带订单数', async () => {
     await loginAs('admin')
     const error = await requestVoid('/customers/cus_001').catch((caught: unknown) => caught)

@@ -151,6 +151,14 @@ export const customerHandlers = [
     if (email === null || email === '') delete next.email
     else if (email !== undefined) next.email = email
     db.customers[index] = next
+    // 订单里的 customer 是列表读模型，不是历史快照；客户改名时同步，避免订单列表显示旧名字。
+    if (next.name !== current.name) {
+      for (const order of db.orders) {
+        if (order.customerId === next.id) {
+          order.customer = { id: next.id, name: next.name }
+        }
+      }
+    }
     return json(customerSchema.parse(next))
   }),
 
@@ -166,9 +174,14 @@ export const customerHandlers = [
 
     const orderCount = db.orders.filter((order) => order.customerId === params.id).length
     if (orderCount > 0) {
-      return fail(409, 'CUSTOMER_HAS_ORDERS', `该客户有 ${orderCount} 个订单，请先归档或转移`, {
-        details: { orderCount },
-      })
+      return fail(
+        409,
+        'CUSTOMER_HAS_ORDERS',
+        `该客户有 ${orderCount} 个订单，不能删除；可将客户状态改为归档`,
+        {
+          details: { orderCount },
+        },
+      )
     }
     db.customers.splice(index, 1)
     return noContent()

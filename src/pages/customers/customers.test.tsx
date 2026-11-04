@@ -86,6 +86,8 @@ describe('客户列表页', () => {
     const dialog = await screen.findByRole('dialog')
     await userEvent.click(within(dialog).getByRole('button', { name: /删\s*除/ }))
 
-    expect(await screen.findByText('该客户有 3 个订单，请先归档或转移')).toBeInTheDocument()
+    expect(
+      await screen.findByText('该客户有 3 个订单，不能删除；可将客户状态改为归档'),
+    ).toBeInTheDocument()
   })
 })

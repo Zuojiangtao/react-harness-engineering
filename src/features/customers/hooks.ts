@@ -27,7 +27,12 @@ export function useMembers() {
 
 export function useCustomerMutations() {
   const queryClient = useQueryClient()
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['customers'] })
+  const invalidate = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['customers'] }),
+      queryClient.invalidateQueries({ queryKey: ['orders'] }),
+    ])
+  }
 
   const create = useMutation({ mutationFn: customersApi.create, onSuccess: invalidate })
   const update = useMutation({

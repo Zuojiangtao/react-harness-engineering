@@ -36,17 +36,17 @@
 
 ### Order
 
-| 字段                  | 类型        | 约束                                  |
-| --------------------- | ----------- | ------------------------------------- |
-| id                    | string      | `ord_` 前缀                           |
-| orderNo               | string      | `ORD-YYYYMMDD-####`，唯一，服务端生成 |
-| customerId            | string      | 必须存在且客户为 active               |
-| customer              | object      | 读模型快照 `{ id, name }`             |
-| amountCents           | integer     | 1 – 100,000,000（整数分）             |
-| status                | enum        | draft / paid / refunded / cancelled   |
-| paidAt                | ISO string? | 进入 paid 时写入                      |
-| note                  | string?     | ≤ 200 字                              |
-| createdAt / updatedAt | ISO string  | 服务端生成                            |
+| 字段                  | 类型        | 约束                                      |
+| --------------------- | ----------- | ----------------------------------------- |
+| id                    | string      | `ord_` 前缀                               |
+| orderNo               | string      | `ORD-YYYYMMDD-####`，唯一，服务端生成     |
+| customerId            | string      | 必须存在且客户为 active                   |
+| customer              | object      | 读模型快照 `{ id, name }`，客户改名时同步 |
+| amountCents           | integer     | 1 – 100,000,000（整数分）                 |
+| status                | enum        | draft / paid / refunded / cancelled       |
+| paidAt                | ISO string? | 进入 paid 时写入                          |
+| note                  | string?     | ≤ 200 字                                  |
+| createdAt / updatedAt | ISO string  | 服务端生成                                |
 
 ## 4. 业务规则
 
