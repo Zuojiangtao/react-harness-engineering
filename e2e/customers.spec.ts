@@ -12,14 +12,16 @@ test('[CUS-01][CUS-02][CUS-03] 客户创建、编辑清空、删除主流程', a
   // 表单字段必须限定在 dialog 内，否则 getByLabel 会同时命中表头和输入框。
   const createDrawer = page.getByRole('dialog', { name: '新建客户' })
   await createDrawer.getByLabel('客户名称').fill(name)
+  // AntD 6 的虚拟列表只给 0×0 的隐藏 listbox 加 role=option，可见项没有 role 也点不到；
+  // 可见项带 title（rc-select 用字符串 label 生成），用 getByTitle 精确命中。
   await createDrawer.getByLabel('行业').click()
-  await page.getByRole('option', { name: '科技' }).click()
+  await page.getByTitle('科技', { exact: true }).click()
   await createDrawer.getByLabel('等级').click()
-  await page.getByRole('option', { name: '重点' }).click()
+  await page.getByTitle('重点', { exact: true }).click()
   await createDrawer.getByLabel('状态').click()
-  await page.getByRole('option', { name: '合作中' }).click()
+  await page.getByTitle('合作中', { exact: true }).click()
   await createDrawer.getByLabel('负责人').click()
-  await page.getByRole('option', { name: '张伟' }).click()
+  await page.getByTitle('张伟', { exact: true }).click()
   // 表单用 requiredMark="optional"，AntD 会给非必填 label 追加“（可选）”
   await createDrawer.getByLabel(/手机号/).fill('13900000000')
   await createDrawer.getByLabel(/邮箱/).fill('e2e@example.com')
