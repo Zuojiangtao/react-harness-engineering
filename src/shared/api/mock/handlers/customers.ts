@@ -95,6 +95,11 @@ export const customerHandlers = [
       return fail(422, 'VALIDATION_ERROR', '表单校验失败', { fields: zodFields(parsed.error) })
     }
     const db = getDb()
+    if (!db.members.some((member) => member.id === parsed.data.ownerId)) {
+      return fail(422, 'VALIDATION_ERROR', '负责人不存在', {
+        fields: { ownerId: '请选择有效的负责人' },
+      })
+    }
     const now = new Date().toISOString()
     const customer: Customer = {
       id: nextId(
@@ -128,10 +133,16 @@ export const customerHandlers = [
       return fail(409, 'STALE_WRITE', '数据已被其他人修改，请刷新后重试')
     }
 
-    const { updatedAt: _ignored, phone, email, ...changes } = parsed.data
+    const { updatedAt: _ignored, phone, email, ownerId, ...changes } = parsed.data
+    if (ownerId !== undefined && !db.members.some((member) => member.id === ownerId)) {
+      return fail(422, 'VALIDATION_ERROR', '负责人不存在', {
+        fields: { ownerId: '请选择有效的负责人' },
+      })
+    }
     const next: Customer = {
       ...current,
       ...changes,
+      ...(ownerId !== undefined ? { ownerId } : {}),
       updatedAt: new Date().toISOString(),
     }
     // null / '' 是显式清空；undefined 表示本次 PATCH 没带这个字段。

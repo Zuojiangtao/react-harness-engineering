@@ -54,7 +54,13 @@ describe('客户接口', () => {
   it('未登录写操作返回 401', async () => {
     const error = await request('/customers', customerSchema, {
       method: 'POST',
-      body: { name: '测试客户', industry: 'tech', level: 'key', status: 'active', ownerId: 'usr_1' },
+      body: {
+        name: '测试客户',
+        industry: 'tech',
+        level: 'key',
+        status: 'active',
+        ownerId: 'usr_1',
+      },
     }).catch((caught: unknown) => caught)
 
     expect(isApiError(error)).toBe(true)
@@ -81,6 +87,27 @@ describe('客户接口', () => {
 
     const page = await request('/customers', customerPage, { query: { keyword: '测试客户' } })
     expect(page.items.some((item) => item.id === created.id)).toBe(true)
+  })
+
+  it('负责人不存在时返回 422 并定位到 ownerId', async () => {
+    await loginAs('admin')
+    const error = await request('/customers', customerSchema, {
+      method: 'POST',
+      body: {
+        name: '无负责人客户',
+        industry: 'tech',
+        level: 'key',
+        status: 'active',
+        ownerId: 'usr_999',
+      },
+    }).catch((caught: unknown) => caught)
+
+    expect(isApiError(error)).toBe(true)
+    if (isApiError(error)) {
+      expect(error.status).toBe(422)
+      expect(error.code).toBe('VALIDATION_ERROR')
+      expect(error.fields?.ownerId).toBeTruthy()
+    }
   })
 
   it('[CUS-03] 更新时 updatedAt 过期返回 409 STALE_WRITE', async () => {
@@ -139,7 +166,13 @@ describe('客户接口', () => {
     await loginAs('viewer')
     const error = await request('/customers', customerSchema, {
       method: 'POST',
-      body: { name: '只读客户', industry: 'tech', level: 'key', status: 'active', ownerId: 'usr_1' },
+      body: {
+        name: '只读客户',
+        industry: 'tech',
+        level: 'key',
+        status: 'active',
+        ownerId: 'usr_1',
+      },
     }).catch((caught: unknown) => caught)
 
     expect(isApiError(error)).toBe(true)
@@ -191,7 +224,8 @@ describe('订单接口', () => {
 
   it('[ORD-04] 收款后不可删除', async () => {
     await loginAs('admin')
-    const paid = (await request('/orders', orderPage, { query: { status: 'paid' } })).items[0] as Order
+    const paid = (await request('/orders', orderPage, { query: { status: 'paid' } }))
+      .items[0] as Order
     const error = await requestVoid(`/orders/${paid.id}`).catch((caught: unknown) => caught)
     expect(isApiError(error)).toBe(true)
     if (isApiError(error)) expect(error.code).toBe('ORDER_PAID')

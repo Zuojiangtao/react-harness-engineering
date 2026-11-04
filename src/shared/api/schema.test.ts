@@ -42,6 +42,26 @@ describe('customerCreateSchema', () => {
   it('手机号格式错误时拒绝', () => {
     expect(customerCreateSchema.safeParse({ ...valid, phone: '12345' }).success).toBe(false)
   })
+
+  it('空必填下拉使用中文提示', () => {
+    const result = customerCreateSchema.safeParse({
+      ...valid,
+      industry: undefined,
+      level: undefined,
+      status: undefined,
+      ownerId: undefined,
+    })
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      const messages = Object.fromEntries(
+        result.error.issues.map((issue) => [issue.path.join('.'), issue.message]),
+      )
+      expect(messages.industry).toBe('请选择行业')
+      expect(messages.level).toBe('请选择等级')
+      expect(messages.status).toBe('请选择状态')
+      expect(messages.ownerId).toBe('请选择负责人')
+    }
+  })
 })
 
 describe('orderCreateSchema', () => {

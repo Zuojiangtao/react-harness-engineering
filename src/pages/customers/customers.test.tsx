@@ -42,6 +42,18 @@ describe('客户列表页', () => {
     expect(saved.email).toBeUndefined()
   })
 
+  it('空表单提交时必填下拉显示中文提示', async () => {
+    renderWithProviders(<CustomersPage />, { route: '/customers' })
+    await screen.findByText('原点设计')
+
+    await userEvent.click(screen.getByRole('button', { name: /新建客户/ }))
+    await userEvent.click(await screen.findByRole('button', { name: /创\s*建/ }))
+
+    expect(await screen.findByText('请选择行业')).toBeInTheDocument()
+    // 负责人 Select 的 placeholder 和字段错误文案相同，两个节点都应存在
+    expect(await screen.findAllByText('请选择负责人')).toHaveLength(2)
+  })
+
   it('关键词搜索走接口并收敛结果', async () => {
     renderWithProviders(<CustomersPage />, { route: '/customers' })
     await screen.findByText('原点设计')
@@ -74,8 +86,6 @@ describe('客户列表页', () => {
     const dialog = await screen.findByRole('dialog')
     await userEvent.click(within(dialog).getByRole('button', { name: /删\s*除/ }))
 
-    expect(
-      await screen.findByText('该客户有 3 个订单，请先归档或转移'),
-    ).toBeInTheDocument()
+    expect(await screen.findByText('该客户有 3 个订单，请先归档或转移')).toBeInTheDocument()
   })
 })

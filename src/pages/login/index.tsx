@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { Alert, App, Button, Card, Form, Input, Space, Typography } from 'antd'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { isApiError } from '@/shared/api/errors'
+import { loginBodySchema } from '@/shared/api/schema'
+import { zodErrorToFields } from '@/shared/ui/resource-form/errors'
 import { useLogin } from '@/features/auth/hooks'
 
-type LoginValues = { email: string; password: string }
+type LoginValues = Record<string, string>
 
 export default function LoginPage() {
   const [params] = useSearchParams()
@@ -18,8 +20,16 @@ export default function LoginPage() {
 
   async function submit(values: LoginValues): Promise<void> {
     setError(null)
+    const parsed = loginBodySchema.safeParse({
+      email: values.email ?? '',
+      password: values.password ?? '',
+    })
+    if (!parsed.success) {
+      form.setFields(zodErrorToFields(parsed.error))
+      return
+    }
     try {
-      const result = await login.mutateAsync(values)
+      const result = await login.mutateAsync(parsed.data)
       message.success(`欢迎，${result.user.name}`)
       void navigate(redirect, { replace: true })
     } catch (caught) {
@@ -56,20 +66,10 @@ export default function LoginPage() {
         {error ? <Alert type="error" showIcon title={error} style={{ marginBottom: 16 }} /> : null}
 
         <Form form={form} layout="vertical" onFinish={submit}>
-          <Form.Item
-            name="email"
-            label="邮箱"
-            rules={[{ required: true, message: '请输入邮箱' }]}
-            initialValue="admin@example.com"
-          >
+          <Form.Item name="email" label="邮箱" initialValue="admin@example.com">
             <Input autoComplete="username" />
           </Form.Item>
-          <Form.Item
-            name="password"
-            label="密码"
-            rules={[{ required: true, message: '请输入密码' }]}
-            initialValue="admin123"
-          >
+          <Form.Item name="password" label="密码" initialValue="admin123">
             <Input.Password autoComplete="current-password" />
           </Form.Item>
           <Button type="primary" htmlType="submit" block loading={login.isPending}>

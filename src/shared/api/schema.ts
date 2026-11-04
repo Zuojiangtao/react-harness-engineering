@@ -40,9 +40,15 @@ const trimmed = z.string().trim()
 
 /** ---------- 客户 ---------- */
 
-export const industrySchema = z.enum(['tech', 'retail', 'finance', 'manufacturing', 'other'])
-export const customerLevelSchema = z.enum(['key', 'normal', 'potential'])
-export const customerStatusSchema = z.enum(['active', 'inactive'])
+export const industrySchema = z.enum(['tech', 'retail', 'finance', 'manufacturing', 'other'], {
+  error: '请选择行业',
+})
+export const customerLevelSchema = z.enum(['key', 'normal', 'potential'], {
+  error: '请选择等级',
+})
+export const customerStatusSchema = z.enum(['active', 'inactive'], {
+  error: '请选择状态',
+})
 
 const phoneSchema = z.string().regex(/^1[3-9]\d{9}$/, '手机号格式不正确')
 const emailSchema = z.email('邮箱格式不正确')
@@ -57,7 +63,7 @@ export const customerSchema = z.object({
   industry: industrySchema,
   level: customerLevelSchema,
   status: customerStatusSchema,
-  ownerId: z.string(),
+  ownerId: z.string({ error: '请选择负责人' }).min(1, '请选择负责人'),
   phone: phoneSchema.optional(),
   email: emailSchema.optional(),
   note: trimmed.max(200, '备注最多 200 字').optional(),
@@ -117,7 +123,6 @@ export const bulkDeleteSchema = z.object({
   ids: z.array(z.string().startsWith('cus_')).min(1, '请至少选择一条记录'),
 })
 
-
 /** ---------- 订单 ---------- */
 
 export const orderStatusSchema = z.enum(['draft', 'paid', 'refunded', 'cancelled'])
@@ -140,8 +145,12 @@ export const orderSchema = z.object({
 export type Order = z.infer<typeof orderSchema>
 
 export const orderCreateSchema = z.object({
-  customerId: z.string().startsWith('cus_'),
-  amountCents: z.number().int().min(1).max(100_000_000),
+  customerId: z.string({ error: '请选择客户' }).startsWith('cus_', '请选择客户'),
+  amountCents: z
+    .number({ error: '请输入金额' })
+    .int('金额必须是整数分')
+    .min(1, '金额必须大于 0')
+    .max(100_000_000, '金额不能超过 1,000,000 元'),
   note: trimmed.max(200, '备注最多 200 字').optional(),
 })
 
@@ -195,7 +204,7 @@ export const userSchema = memberSchema.extend({
 export type User = z.infer<typeof userSchema>
 
 export const loginBodySchema = z.object({
-  email: z.email('邮箱格式不正确'),
+  email: z.string().trim().min(1, '请输入邮箱').email('邮箱格式不正确'),
   password: z.string().min(1, '请输入密码'),
 })
 
