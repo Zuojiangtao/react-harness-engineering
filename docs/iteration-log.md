@@ -2,6 +2,13 @@
 
 记录真实的返工与拦截，而不是"AI 一次写完了所有代码"。每条都对应一次提交或一次门禁失败。
 
+## 2026-11-04 13:00 CI e2e 第二关：AntD 6 虚拟列表的 option 没有 role
+
+- 现象：`客户名称` 修好后 CI 仍红，`test:e2e` 跑满 67s 超时；artifact 截图停在「新建客户」Drawer，行业下拉已展开但没选中。
+- 根因：trace 里 `getByRole('option', { name: '科技' })` 解析到的是 `<div role="option" id="industry_list_0">tech</div>`。AntD 6 的 Select 默认开虚拟列表，只给 0×0 的隐藏 listbox 加 `role=option`；用户真正点击的 `.ant-select-item-option` 没有 role，Playwright 一直等它可见直到超时。
+- 处理：可见项带 `title`（rc-select 对字符串 label 生成），e2e 改用 `getByTitle('科技', { exact: true })` 命中，四个下拉统一处理。
+- 证据：`pnpm run verify` 13.8s / 92 tests；e2e 需 push 后由 CI 复验。
+
 ## 2026-11-04 12:35 CI e2e 的真实失败：`客户名称` 同时命中表头和表单
 
 - 现象：三次 push 都是 `verify` 绿、`test:e2e` 红（8–10s）；`auth` / `msw` 两条通过，只有 `customers` 失败。
