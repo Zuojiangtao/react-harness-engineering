@@ -19,9 +19,8 @@ describe('[AUTH-01] handleUnauthorized', () => {
 
     expect(getToken()).toBeNull()
     expect(clear).toHaveBeenCalledTimes(1)
-    expect(navigate).toHaveBeenCalledWith(
-      expect.stringMatching(/^\/login\?redirect=/),
-      { replace: true },
-    )
+    expect(navigate).toHaveBeenCalledWith(expect.stringMatching(/^\/login\?redirect=/), {
+      replace: true,
+    })
   })
 })

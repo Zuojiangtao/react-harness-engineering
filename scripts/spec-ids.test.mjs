@@ -13,10 +13,7 @@ describe('extractRequirementIds', () => {
   })
 
   it('保留三位前缀并去重', () => {
-    expect([...extractRequirementIds('[CUS-01] [CUS-01] [ORD-02]')]).toEqual([
-      'CUS-01',
-      'ORD-02',
-    ])
+    expect([...extractRequirementIds('[CUS-01] [CUS-01] [ORD-02]')]).toEqual(['CUS-01', 'ORD-02'])
   })
 
   it('不把小写或非方括号文本当作需求 ID', () => {

@@ -14,7 +14,8 @@ const cases = [
   {
     name: 'features/orders -> features/customers（@ 别名）',
     file: 'src/features/orders/__boundary_probe.ts',
-    source: "import { customersApi } from '@/features/customers/api'\nexport const probe = customersApi\n",
+    source:
+      "import { customersApi } from '@/features/customers/api'\nexport const probe = customersApi\n",
   },
   {
     name: 'features/orders -> features/customers（无后缀相对路径）',
@@ -24,12 +25,14 @@ const cases = [
   {
     name: 'shared/api -> features/customers（@ 别名）',
     file: 'src/shared/api/__boundary_probe.ts',
-    source: "import { customersApi } from '@/features/customers/api'\nexport const probe = customersApi\n",
+    source:
+      "import { customersApi } from '@/features/customers/api'\nexport const probe = customersApi\n",
   },
   {
     name: 'shared/api -> features/customers（无后缀相对路径）',
     file: 'src/shared/api/__boundary_probe.ts',
-    source: "import { customersApi } from '../../features/customers/api'\nexport const probe = customersApi\n",
+    source:
+      "import { customersApi } from '../../features/customers/api'\nexport const probe = customersApi\n",
   },
   {
     name: 'pages -> app（@ 别名）',

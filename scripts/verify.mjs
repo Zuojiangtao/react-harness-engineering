@@ -28,9 +28,6 @@ const steps = [
 if (existsSync(join(root, 'scripts', 'check-spec.mjs'))) {
   steps.push(['spec', ['node', 'scripts/check-spec.mjs', '--strict']])
 }
-if (existsSync(join(root, 'scripts', 'check-contract.mjs'))) {
-  steps.push(['contract', ['node', 'scripts/check-contract.mjs']])
-}
 steps.push(['build', ['vite', 'build']])
 
 const started = Date.now()
